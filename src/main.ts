@@ -2,9 +2,12 @@
 // Feature logic lives in modules under src/ (src/panels/*, src/forms/*, src/render/*, ...).
 import exampleYaml from '../reference/example-data.yaml?raw';
 import { pdfFileName } from './file-name';
+import { getFormDefinition } from './forms/definition';
+import { generatePrompt } from './forms/prompt';
 import { getForm, loadFormPdf } from './forms/registry';
 import { mountActionsPanel } from './panels/actions';
 import { mountNotices } from './panels/notices';
+import { mountPromptPanel } from './panels/prompt';
 import { mountYamlPanel } from './panels/yaml';
 import { createFormFiller } from './render/fill-form';
 import { createAppState } from './state';
@@ -47,3 +50,5 @@ state.subscribe(({ result }) => actions.setDownloadEnabled(result.ok));
 
 // Preload so the first click is instant and load errors show up early.
 getBlankPdf().catch((error) => notices.show(`Could not load the form PDF: ${String(error)}`, 'error'));
+
+mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(getFormDefinition(FORM_ID)) });
