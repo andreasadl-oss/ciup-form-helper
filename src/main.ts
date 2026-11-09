@@ -7,6 +7,7 @@ import { getFormDefinition } from './forms/definition';
 import { generatePrompt } from './forms/prompt';
 import { getForm, loadFormPdf } from './forms/registry';
 import { mountActionsPanel } from './panels/actions';
+import { mountFormPanel } from './panels/form';
 import { mountNotices } from './panels/notices';
 import { mountPromptPanel } from './panels/prompt';
 import { mountYamlPanel } from './panels/yaml';
@@ -60,3 +61,5 @@ state.subscribe(({ result }) => actions.setDownloadEnabled(result.ok));
 getBlankPdf().catch((error) => notices.show(`Could not load the form PDF: ${String(error)}`, 'error'));
 
 mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(getFormDefinition(FORM_ID)) });
+
+mountFormPanel(mount('form-panel'), state, getFormDefinition(FORM_ID));
