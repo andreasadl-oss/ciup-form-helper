@@ -135,6 +135,14 @@ describe('form panel', () => {
     expect(data()).toEqual({ date_debut: '24/12/2026' });
   });
 
+  it('shows a date typed with one-digit day and month in the date picker', () => {
+    const { root } = setup();
+    const text = root.querySelector<HTMLInputElement>('[data-field="date_debut"] input[type="text"]')!;
+    text.value = '1/3/2026';
+    text.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(root.querySelector<HTMLInputElement>('[data-field="date_debut"] input[type="date"]')!.value).toBe('2026-03-01');
+  });
+
   it('exposes a data-field hook with a warning slot for every data key and the appendix', () => {
     const { root, panel } = setup();
     for (const key of [...def.validKeys]) {

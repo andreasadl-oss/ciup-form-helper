@@ -11,6 +11,7 @@
  * wrapper `[data-field="<key>"]` containing a `.field-warning` slot. Use
  * `FormPanel.setWarnings(key, messages)` rather than writing to it directly.
  */
+import { fromIsoDate, toIsoDate } from '../dates';
 import type { Bilingual, DataKeyDef, FieldDef, FormDefinition } from '../forms/definition';
 import { dataToYaml } from '../forms/serialise';
 import { ui, type Lang } from '../i18n';
@@ -53,18 +54,6 @@ const asText = (value: unknown): string => (value === undefined || value === nul
 
 const isPlainObject = (value: unknown): value is Data =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
-
-/** jj/mm/aaaa → yyyy-mm-dd (for `<input type="date">`), or '' if not a date. */
-export function toIsoDate(text: string): string {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text.trim());
-  return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
-}
-
-/** yyyy-mm-dd → jj/mm/aaaa, or '' if not a date. */
-export function fromIsoDate(iso: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
-}
 
 let idCounter = 0;
 const nextId = (key: string) => `form-${key.replace(/\W/g, '-')}-${++idCounter}`;

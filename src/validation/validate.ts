@@ -5,6 +5,7 @@
  * Warnings carry a message key + params, not text: turn them into text with
  * `formatWarning` (`./messages`), so the UI can translate them.
  */
+import { parseDate } from '../dates';
 import type { FormDefinition } from '../forms/definition';
 import { appendixHasRows, dataKeysOf, fieldText, fitLines, type FontMetrics, type Layout, type Problem, type ProblemKind } from '../render';
 
@@ -64,7 +65,7 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
   for (const key of dateKeys) {
     const value = data[key];
     if (isBlank(value) || String(value).includes('TODO')) continue;
-    const day = parseDate(String(value));
+    const day = parseDay(String(value));
     if (day === undefined) {
       add(key, 'badDate', { value: String(value) });
       continue;
@@ -162,13 +163,9 @@ const RULES = {
 const isBlank = (value: unknown) => value === undefined || value === null || value === '' || value === false;
 
 /** `jj/mm/aaaa` → day number (see `dayNumber`), or undefined if not a real date in that format. */
-function parseDate(text: string): number | undefined {
-  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(text.trim());
-  if (!m) return undefined;
-  const [d, mo, y] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  const date = new Date(Date.UTC(y, mo - 1, d));
-  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== mo - 1 || date.getUTCDate() !== d) return undefined;
-  return dayNumber(y, mo, d);
+function parseDay(text: string): number | undefined {
+  const date = parseDate(text);
+  return date && dayNumber(date.year, date.month, date.day);
 }
 
 /** Days since 1970-01-01 of a calendar date (no time zone involved). */

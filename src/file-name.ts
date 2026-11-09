@@ -1,3 +1,4 @@
+import { toIsoDate } from './dates';
 import type { FillData } from './render';
 
 const PREFIX = 'demande-manifestation';
@@ -9,10 +10,9 @@ export function pdfFileName(data: FillData): string {
   return `${parts.join('-')}.pdf`;
 }
 
-/** "12/12/2026" (the form's DD/MM/YYYY) -> "2026-12-12"; anything else -> "". */
+/** "12/12/2026" (the form's jj/mm/aaaa) -> "2026-12-12"; anything else -> "". */
 function isoDate(value: unknown): string {
-  const m = typeof value === 'string' ? /^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*$/.exec(value) : null;
-  return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : '';
+  return typeof value === 'string' ? toIsoDate(value) : '';
 }
 
 /** Lower-case ASCII letters, digits and single hyphens; accents folded. */
