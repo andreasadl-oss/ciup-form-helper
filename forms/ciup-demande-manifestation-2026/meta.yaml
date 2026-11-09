@@ -1,0 +1,298 @@
+# UI / prompt / email metadata for the CIUP "Demande de manifestation 2026" form.
+# Positions live in layout.yaml; this file only says what each field means.
+# Loaded by src/forms/definition.ts, which checks it against layout.yaml.
+#
+# fields.<key>:        one entry per layout field, plus one per key used inside a
+#                      layout `template` (date_debut, date_fin, heure_debut, heure_fin).
+#   section            id from `sections`
+#   label / help       {en, fr}; help is optional
+#   max_length         recommended maximum number of characters (warning only)
+#   format             date (jj/mm/aaaa) | time (e.g. "19 h 30"), template keys only
+# groups.<id>:         radio-like sets of check fields (at most one should be ticked)
+
+recipient: evenements.internes@ciup.fr
+deadline_days: 21
+
+email:
+  subject: "Demande de manifestation : {nom}, {date_debut}"
+  body: |-
+    Bonjour,
+
+    Veuillez trouver ci-joint notre demande de manifestation « {nom} » ({maison}), le {date_debut} de {heure_debut} à {heure_fin}, {lieu}.
+    Formulaire et programme en pièce jointe.
+
+    Cordialement,
+
+prompt:
+  intro: >-
+    You help residents of the Cité internationale universitaire de Paris (CIUP) fill in the
+    "Demande de manifestation 2026" form. Turn my event description into YAML using ONLY the keys below.
+  # General rules. The "Text must fit" rule is generated from `max_length`, and the
+  # CIUP rules from `ciup_rules`, so they cannot drift from the fields.
+  rules:
+    - "Output only one ```yaml code block, nothing else."
+    - "Write the values in French."
+    - "Checkboxes: write `true` for ticked ones and leave the others out entirely."
+    - "If a piece of information is not in my description, write `\"TODO <what is missing>\"`. Never invent names, dates, rooms or universities."
+    - "Leave out keys that don't apply (e.g. exhibition fields for a concert)."
+    - "Dates as `jj/mm/aaaa`, times as `19 h 30`."
+  outro: >-
+    <Describe it in a few sentences, in any language: what, who performs, which house and room,
+    date and time, expected audience, free or not, songs/programme if a concert, your university.>
+
+ciup_rules: >-
+  Events at the Cité are free; no ticket or alcohol sales. Paid artists or partnerships require
+  a convention (section 5); otherwise leave section 5 out.
+
+sections:
+  - id: demandeur
+    title: {en: "1. Applicant", fr: "1. Demandeur"}
+  - id: evenement
+    title: {en: "2. Event", fr: "2. Informations sur l'événement"}
+  - id: personnalites
+    title: {en: "3. Notable guests", fr: "3. Personnalités attendues"}
+  - id: dispositifs
+    title: {en: "4. Arrangements and services", fr: "4. Dispositifs et prestations"}
+  - id: tiers
+    title: {en: "5. Third party (only if a convention is required)", fr: "5. Informations tiers"}
+  - id: interet
+    title: {en: "6. Purpose of the event", fr: "6. Intérêt de la manifestation"}
+  - id: appendix
+    title: {en: "Concert programme (Sacem)", fr: "Programme (Sacem)"}
+
+appendix:
+  section: appendix
+  label: {en: "Programme page", fr: "Page programme"}
+  help:
+    en: "Concerts only: programme for the Sacem declaration (extra page)."
+    fr: "Concerts uniquement : programme pour la déclaration Sacem (page supplémentaire)."
+  # Shown in the prompt as the shape of the `appendix` key.
+  example:
+    title: "Programme : <nom de l'événement>"
+    intro: "<performers, duration>"
+    columns: ["#", "Titre", "Compositeur(s) / auteur(s)"]
+    col_widths: [25, 170, 300]
+    rows:
+      - ["1", "<title>", "<composer / lyricist>"]
+
+groups:
+  conference_ouvert: {fields: [conference_ouvert_oui, conference_ouvert_non]}
+  soiree_public: {fields: [soiree_interne, soiree_externe]}
+  concert_ouvert: {fields: [concert_ouvert_oui, concert_ouvert_non]}
+  film_ouvert: {fields: [film_ouvert_oui, film_ouvert_non]}
+  entree_acces: {fields: [entree_libre, entree_invitation]}
+  entree_tarif: {fields: [entree_gratuite, entree_payante]}
+  artiste: {fields: [artiste_oui, artiste_non]}
+  remunere: {fields: [remunere_oui, remunere_non]}
+  remunere_statut: {fields: [remunere_intermittent, remunere_association]}
+
+fields:
+  # 1. Demandeur
+  maison:
+    section: demandeur
+    label: {en: "House or service making the request", fr: "Maison ou service demandeur"}
+    help: {en: "e.g. \"Fondation Deutsch de la Meurthe\"", fr: "ex. « Fondation Deutsch de la Meurthe »"}
+    max_length: 60
+  nature_programmation:
+    section: demandeur
+    label: {en: "Cultural programming", fr: "Programmation culturelle"}
+    help: {en: "Cultural programming, CIUP is organiser", fr: "Programmation culturelle, la CIUP est organisatrice"}
+  nature_partenariat:
+    section: demandeur
+    label: {en: "Partnership", fr: "Partenariat"}
+    help: {en: "Partnership (convention required)", fr: "Partenariat (convention obligatoire)"}
+  nature_residents:
+    section: demandeur
+    label: {en: "Residents' event", fr: "Manifestation de résidents"}
+    help: {en: "Event organised by/for residents (most common)", fr: "Manifestation organisée par/pour les résidents (le cas le plus fréquent)"}
+  nature_interne:
+    section: demandeur
+    label: {en: "Internal meeting", fr: "Réunion interne"}
+
+  # 2. Événement
+  nom:
+    section: evenement
+    label: {en: "Event name", fr: "Nom de la manifestation"}
+    max_length: 60
+  type_conference:
+    section: evenement
+    label: {en: "Conference", fr: "Conférence"}
+  conference_ouvert_oui:
+    section: evenement
+    label: {en: "Conference open to the public: yes", fr: "Conférence ouverte au public : oui"}
+  conference_ouvert_non:
+    section: evenement
+    label: {en: "Conference open to the public: no", fr: "Conférence ouverte au public : non"}
+  type_soiree:
+    section: evenement
+    label: {en: "Party", fr: "Soirée dansante"}
+    help: {en: "Dance party", fr: "Soirée dansante"}
+  soiree_interne:
+    section: evenement
+    label: {en: "Party: house residents only", fr: "Soirée : résidents de la maison uniquement"}
+    help: {en: "Only residents of the house", fr: "Uniquement les résidents de la maison"}
+  soiree_externe:
+    section: evenement
+    label: {en: "Party: other residents / outside public", fr: "Soirée : autres résidents / public extérieur"}
+    help: {en: "Other residents / outside public", fr: "Autres résidents / public extérieur"}
+  type_concert:
+    section: evenement
+    label: {en: "Concert", fr: "Concert"}
+    help: {en: "Requires a programme (Sacem): fill in the programme page", fr: "Programme obligatoire (Sacem) : remplir la page programme"}
+  concert_ouvert_oui:
+    section: evenement
+    label: {en: "Concert open to the public: yes", fr: "Concert ouvert au public : oui"}
+  concert_ouvert_non:
+    section: evenement
+    label: {en: "Concert open to the public: no", fr: "Concert ouvert au public : non"}
+  type_film:
+    section: evenement
+    label: {en: "Film screening", fr: "Projection de film"}
+  film_ouvert_oui:
+    section: evenement
+    label: {en: "Screening open to the public: yes", fr: "Projection ouverte au public : oui"}
+  film_ouvert_non:
+    section: evenement
+    label: {en: "Screening open to the public: no", fr: "Projection ouverte au public : non"}
+  type_exposition:
+    section: evenement
+    label: {en: "Exhibition", fr: "Exposition"}
+  expo_valeur:
+    section: evenement
+    label: {en: "Total value of the works", fr: "Valeur totale des œuvres"}
+  expo_nombre:
+    section: evenement
+    label: {en: "Number of works", fr: "Nombre d'œuvres"}
+  expo_type:
+    section: evenement
+    label: {en: "Type of works", fr: "Type d'œuvres"}
+    help: {en: "Photos, paintings…", fr: "Photos, peintures…"}
+  type_autre:
+    section: evenement
+    label: {en: "Other", fr: "Autre"}
+  autre_precision:
+    section: evenement
+    label: {en: "Other: please specify", fr: "Autre : préciser"}
+  dates:
+    section: evenement
+    label: {en: "Dates", fr: "Dates"}
+  date_debut:
+    section: evenement
+    label: {en: "Start date", fr: "Date de début"}
+    help: {en: "jj/mm/aaaa", fr: "jj/mm/aaaa"}
+    format: date
+  date_fin:
+    section: evenement
+    label: {en: "End date", fr: "Date de fin"}
+    help: {en: "jj/mm/aaaa (same as start for a one-day event)", fr: "jj/mm/aaaa (identique au début pour un seul jour)"}
+    format: date
+  horaires:
+    section: evenement
+    label: {en: "Times", fr: "Horaires"}
+  heure_debut:
+    section: evenement
+    label: {en: "Start time", fr: "Heure de début"}
+    help: {en: "e.g. \"19 h 30\"", fr: "ex. « 19 h 30 »"}
+    format: time
+  heure_fin:
+    section: evenement
+    label: {en: "End time", fr: "Heure de fin"}
+    help: {en: "e.g. \"21 h 00\"", fr: "ex. « 21 h 00 »"}
+    format: time
+  lieu:
+    section: evenement
+    label: {en: "Room", fr: "Lieu (salle)"}
+    help: {en: "Room name", fr: "Nom de la salle"}
+    max_length: 60
+  assis:
+    section: evenement
+    label: {en: "Seated participants", fr: "Participants assis"}
+    help: {en: "Number of seated participants", fr: "Nombre de participants assis"}
+  debout:
+    section: evenement
+    label: {en: "Standing participants", fr: "Participants debout"}
+    help: {en: "Number standing", fr: "Nombre de participants debout"}
+  entree_libre:
+    section: evenement
+    label: {en: "Open entry", fr: "Entrée libre"}
+  entree_invitation:
+    section: evenement
+    label: {en: "By invitation", fr: "Sur invitation"}
+  entree_gratuite:
+    section: evenement
+    label: {en: "Free", fr: "Gratuite"}
+  entree_payante:
+    section: evenement
+    label: {en: "Paid", fr: "Payante"}
+    help: {en: "Events at the Cité must be free", fr: "Les manifestations à la Cité doivent être gratuites"}
+
+  # 3. Personnalités attendues
+  personnalites:
+    section: personnalites
+    label: {en: "Notable guests", fr: "Personnalités attendues"}
+    help: {en: "Notable guests, or \"Aucune\"", fr: "Personnalités attendues, ou « Aucune »"}
+
+  # 4. Dispositifs
+  artiste_oui:
+    section: dispositifs
+    label: {en: "Artist performing: yes", fr: "Intervention d'artiste : oui"}
+  artiste_non:
+    section: dispositifs
+    label: {en: "Artist performing: no", fr: "Intervention d'artiste : non"}
+  remunere_oui:
+    section: dispositifs
+    label: {en: "Artist paid: yes", fr: "Artiste rémunéré : oui"}
+  remunere_non:
+    section: dispositifs
+    label: {en: "Artist paid: no", fr: "Artiste rémunéré : non"}
+  remunere_intermittent:
+    section: dispositifs
+    label: {en: "Paid as intermittent (GUSO)", fr: "Rémunéré comme intermittent (GUSO)"}
+    help: {en: "GUSO declaration", fr: "Déclaration GUSO"}
+  remunere_association:
+    section: dispositifs
+    label: {en: "Paid through an association", fr: "Rémunéré via une association"}
+    help: {en: "Convention required", fr: "Convention obligatoire"}
+  traiteur_accueil_cafe:
+    section: dispositifs
+    label: {en: "Catering: welcome coffee", fr: "Traiteur : accueil café"}
+  traiteur_pause_cafe:
+    section: dispositifs
+    label: {en: "Catering: coffee break", fr: "Traiteur : pause café"}
+  traiteur_cocktail:
+    section: dispositifs
+    label: {en: "Catering: cocktail", fr: "Traiteur : cocktail"}
+  traiteur_quantite:
+    section: dispositifs
+    label: {en: "Catering: number of people", fr: "Traiteur : nombre de personnes"}
+    help: {en: "Number of people for catering", fr: "Nombre de personnes pour le traiteur"}
+
+  # 5. Tiers
+  tiers_nom:
+    section: tiers
+    label: {en: "Third party name", fr: "Nom du tiers"}
+  tiers_signataire:
+    section: tiers
+    label: {en: "Signatory", fr: "Signataire"}
+    help: {en: "Name, first name, role", fr: "Nom, prénom, fonction"}
+  tiers_email:
+    section: tiers
+    label: {en: "Third party email", fr: "E-mail du tiers"}
+  tiers_adresse:
+    section: tiers
+    label: {en: "Third party address", fr: "Adresse du tiers"}
+  tiers_infos:
+    section: tiers
+    label: {en: "Other information", fr: "Autres informations"}
+
+  # 6. Intérêt
+  interet:
+    section: interet
+    label: {en: "Purpose of the event", fr: "Intérêt de la manifestation"}
+    help: {en: "Cultural / educational / community goals of the event", fr: "Objectifs culturels, éducatifs ou communautaires de la manifestation"}
+    max_length: 450
+  universites:
+    section: interet
+    label: {en: "Participants' universities", fr: "Universités des participants"}
+    help: {en: "Universities/schools of the participants", fr: "Universités / écoles des participants"}
+    max_length: 300
