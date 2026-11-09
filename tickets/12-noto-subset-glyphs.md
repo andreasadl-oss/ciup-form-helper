@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [10]
 ---
 # 12 Bug: missing glyphs with embedded Noto Sans

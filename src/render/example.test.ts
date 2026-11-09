@@ -1,11 +1,13 @@
 // @vitest-environment node
 // End to end on the real CIUP form with reference/example-data.yaml.
 import { readFileSync } from 'node:fs';
+import { create as createFont } from '@pdf-lib/fontkit';
 import { PDFDocument } from 'pdf-lib';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import { parseLayout, renderForm, type FillData } from '.';
-import { textRuns } from './pdf-inspect.test-helper';
+import { notoSansFromDisk } from './noto-sans.test-helper';
+import { drawnGlyphs, glyphRecordLength, textRuns } from './pdf-inspect.test-helper';
 
 const dir = 'forms/ciup-demande-manifestation-2026';
 const formPdf = new Uint8Array(readFileSync(`${dir}/form.pdf`));
@@ -25,6 +27,30 @@ describe('rendering the example request', () => {
     const interet = (await textRuns(pdf, 1)).filter((r) => r.x === 49.5 && r.y <= 282.2 && r.y > 230);
     expect(interet.length).toBeGreaterThan(1);
     expect(interet.length).toBeLessThanOrEqual(4);
+  });
+
+  it('embeds a Noto Sans subset that draws every character with its real outline (ticket 12)', async () => {
+    const source = {
+      regular: createFont(readFileSync('src/assets/fonts/NotoSans-Regular.ttf')),
+      bold: createFont(readFileSync('src/assets/fonts/NotoSans-Bold.ttf')),
+    };
+    const { pdf } = await renderForm({ formPdf, layout, data: example, fonts: notoSansFromDisk });
+    for (const page of [0, 1, 2]) {
+      const runs = await drawnGlyphs(pdf, page);
+      expect(runs.length).toBeGreaterThan(0);
+      for (const run of runs) {
+        const text = run.map((g) => g.char).join('');
+        const wrong = run
+          .filter((g) => {
+            const font = g.bold ? source.bold : source.regular;
+            const original = font.layout(g.char).glyphs[0]; // layout: a ligature glyph stands for several chars
+            // FreeType/pdfium drop a glyph whose loca record is shorter than its data.
+            return g.outline !== original.path.toSVG() || g.recordLength < glyphRecordLength(font, original.id);
+          })
+          .map((g) => g.char);
+        expect({ text, wrong }).toEqual({ text, wrong: [] });
+      }
+    }
   });
 
   it('keeps the two form pages only when there is no appendix', async () => {

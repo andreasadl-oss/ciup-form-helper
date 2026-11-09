@@ -59,12 +59,61 @@ export function notoSansFrom(load: () => Promise<FontBytes>): FontFamily {
       });
       // fontkit is big: load it with the font files, not with the app.
       const [{ regular, bold }, { default: fontkit }] = await Promise.all([bytes, import('@pdf-lib/fontkit')]);
-      doc.registerFontkit(fontkit);
+      doc.registerFontkit(withEvenGlyphRecords(fontkit));
       const [r, b] = await Promise.all([
         doc.embedFont(regular, { subset: true }),
         doc.embedFont(bold, { subset: true }),
       ]);
       return { regular: customFace(r), bold: customFace(b) };
+    },
+  };
+}
+
+/** What pdf-lib needs from fontkit (`doc.registerFontkit`). */
+type Fontkit = Parameters<PDFDocument['registerFontkit']>[0];
+
+/** The private parts of @pdf-lib/fontkit's `TTFSubset` that `withEvenGlyphRecords` patches. */
+interface TTFSubsetInternals {
+  _addGlyph(gid: number): number;
+  glyf: Uint8Array[];
+  offset: number;
+}
+
+/**
+ * Ticket 12. @pdf-lib/fontkit's TrueType subsetter copies each glyph record
+ * as is, then writes a short-format `loca` (offsets / 2) whenever the subset's
+ * `glyf` is under 64 KB, which it always is here. Noto Sans has odd-length
+ * glyph records, so every offset after one is rounded down a byte: viewers
+ * (pdfium, pdf.js, FreeType) then drop those glyphs ("Maison" drew as "n").
+ * Pad each record to an even length, as the TrueType spec requires for a
+ * short `loca`. Wraps fontkit instead of patching it globally.
+ */
+export function withEvenGlyphRecords(fontkit: Fontkit): Fontkit {
+  return {
+    create(buffer, postscriptName) {
+      const font = fontkit.create(buffer, postscriptName);
+      const createSubset = font.createSubset.bind(font);
+      font.createSubset = () => {
+        const subset = createSubset();
+        const internals = subset as unknown as Partial<TTFSubsetInternals>;
+        const addGlyph = internals._addGlyph;
+        if (typeof addGlyph !== 'function') return subset; // CFF subset: no loca
+        internals._addGlyph = function (this: TTFSubsetInternals, gid: number) {
+          const index = addGlyph.call(this, gid);
+          const record = this.glyf[index];
+          if (record.length % 2 === 1) {
+            // Same (Buffer polyfill) class fontkit uses, zero-filled.
+            const padded = new (record.constructor as Uint8ArrayConstructor)(record.length + 1);
+            padded.set(record);
+            padded[record.length] = 0;
+            this.glyf[index] = padded;
+            this.offset += 1;
+          }
+          return index;
+        };
+        return subset;
+      };
+      return font;
     },
   };
 }
