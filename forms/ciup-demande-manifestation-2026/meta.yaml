@@ -15,6 +15,8 @@ deadline_days: 21
 
 # email.subject / body: {data_key} placeholders. A [bracketed part] is dropped when any
 # placeholder inside it is empty (or TODO), so the sentence still reads well.
+# {appendix} prints nothing; it keeps its [part] only when the programme page has rows.
+# email.truncate_first: shortened first when the mailto: link gets too long.
 # No signature: the user signs in their own mail client.
 email:
   subject: "Demande de manifestation[ : {nom}][, {date_debut}]"
@@ -22,9 +24,10 @@ email:
     Bonjour,
 
     Veuillez trouver ci-joint notre demande de manifestation[ « {nom} »][ ({maison})][, le {date_debut}][ de {heure_debut} à {heure_fin}][, {lieu}].
-    Formulaire et programme en pièce jointe.
+    Formulaire[{appendix} et programme] en pièce jointe.
 
     Cordialement,
+  truncate_first: [nom]
 
 prompt:
   intro: >-

@@ -81,6 +81,8 @@ export interface EmailDef {
   subject: string;
   /** Short French body, same template syntax as `subject`. */
   body: string;
+  /** Data keys shortened first when the `mailto:` URL is too long (the event description). */
+  truncateFirst: string[];
 }
 
 export interface PromptDef {
@@ -143,7 +145,7 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
     groups: Record<string, { fields: string[] }>;
     recipient: string;
     deadline_days: number;
-    email: { subject: string; body: string };
+    email: { subject: string; body: string; truncate_first?: string[] };
     prompt: PromptDef;
     ciup_rules: string;
     appendix: Omit<AppendixDef, 'key'>;
@@ -192,17 +194,19 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
   for (const key of Object.keys(meta.fields)) {
     if (!known.has(key)) fail(`meta.yaml field "${key}" is not in layout.yaml and not used in any template`);
   }
-  for (const [name, template] of Object.entries(meta.email)) {
+  for (const [name, template] of [['subject', meta.email.subject], ['body', meta.email.body]] as const) {
     for (const k of templateKeys(template)) {
-      if (!dataKeys.has(k)) fail(`email ${name} uses {${k}}, which is not a data key`);
+      if (!dataKeys.has(k) && k !== APPENDIX_KEY) fail(`email ${name} uses {${k}}, which is not a data key`);
     }
   }
+  const truncateFirst = meta.email.truncate_first ?? [];
+  for (const k of truncateFirst) if (!dataKeys.has(k)) fail(`email truncate_first lists "${k}", which is not a data key`);
 
   const validKeys = [...dataKeys, APPENDIX_KEY];
 
   return {
     id,
-    email: { to: meta.recipient, subject: meta.email.subject, body: meta.email.body },
+    email: { to: meta.recipient, subject: meta.email.subject, body: meta.email.body, truncateFirst },
     deadlineDays: meta.deadline_days,
     prompt: { intro: meta.prompt.intro, rules: meta.prompt.rules, outro: meta.prompt.outro },
     ciupRules: meta.ciup_rules,

@@ -34,11 +34,18 @@ describe('buildMailto', () => {
         'Bonjour,',
         '',
         'Veuillez trouver ci-joint notre demande de manifestation « Soirée acoustique » (Maison Exemple), le 12/12/2026 de 19 h 30 à 21 h 00, Grand salon.',
-        'Formulaire et programme en pièce jointe.',
+        'Formulaire en pièce jointe.',
         '',
         'Cordialement,',
       ].join('\r\n'),
     );
+  });
+
+  it('mentions the programme as an attachment only when there is a programme page with rows', () => {
+    const programme = { title: 'Programme', columns: ['#', 'Titre'], rows: [['1', 'Autumn Leaves']] };
+    expect(parse(buildMailto(email, { ...full, appendix: programme })).body).toContain('\r\nFormulaire et programme en pièce jointe.\r\n');
+    const empty = { ...programme, rows: [['', '']] };
+    expect(parse(buildMailto(email, { ...full, appendix: empty })).body).toContain('\r\nFormulaire en pièce jointe.\r\n');
   });
 
   it('percent-encodes spaces, line breaks and special characters (no "+")', () => {
@@ -73,7 +80,16 @@ describe('buildMailto', () => {
     expect(url.length).toBeLessThanOrEqual(MAX_MAILTO_LENGTH);
     const { subject, body } = parse(url);
     expect(subject).toMatch(/^Demande de manifestation : Très longue soirée .*…, 12\/12\/2026$/);
-    expect(body).toContain('Formulaire et programme en pièce jointe.');
+    expect(body).toContain('Formulaire en pièce jointe.');
     expect(body).toContain('Cordialement,');
+  });
+
+  it('shortens the event name before any other value', () => {
+    const lieu = 'Salle '.repeat(120).trim(); // ~720 characters, the longest value
+    const url = buildMailto(email, { ...full, nom: 'x'.repeat(400), lieu });
+    expect(url.length).toBeLessThanOrEqual(MAX_MAILTO_LENGTH);
+    const { subject, body } = parse(url);
+    expect(subject).toMatch(/^Demande de manifestation : x+…, 12\/12\/2026$/);
+    expect(body).toContain(`, ${lieu}.`);
   });
 });

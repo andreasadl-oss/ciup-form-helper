@@ -75,6 +75,8 @@ describe('parseFormDefinition consistency checks', () => {
 
   it('rejects mail templates that use unknown data keys', () => {
     expect(parseWith((m) => (m.email.body = 'Bonjour {dates}'))).toThrow(/email.*\{dates\}/);
+    expect(parseWith((m) => (m.email.body = 'Formulaire[{appendix} et programme]'))).not.toThrow();
+    expect(parseWith((m) => (m.email.truncate_first = ['dates']))).toThrow(/truncate_first.*dates/);
   });
 });
 
@@ -149,7 +151,8 @@ describe('getFormDefinition (CIUP form)', () => {
     expect(def.email.to).toBe('evenements.internes@ciup.fr');
     expect(def.email.subject).toBe('Demande de manifestation[ : {nom}][, {date_debut}]');
     expect(def.email.body).toMatch(/^Bonjour,/);
-    expect(def.email.body).toMatch(/[Ff]ormulaire et programme en pièce jointe/);
+    expect(def.email.body).toContain('Formulaire[{appendix} et programme] en pièce jointe.');
+    expect(def.email.truncateFirst).toEqual(['nom']);
     expect(def.deadlineDays).toBe(21);
   });
 
