@@ -1,6 +1,7 @@
 // Wiring only: look up mount elements, create panels, connect them.
 // Feature logic lives in modules under src/ (src/panels/*, src/forms/*, src/render/*, ...).
 import exampleYaml from '../reference/example-data.yaml?raw';
+import { buildMailto } from './email';
 import { pdfFileName } from './file-name';
 import { getFormDefinition } from './forms/definition';
 import { generatePrompt } from './forms/prompt';
@@ -46,6 +47,13 @@ const actions = mountActionsPanel(mount('actions-panel'), {
     return pdf;
   },
   onError: (error) => notices.show(`Could not create the PDF: ${String(error)}`, 'error'),
+  email: {
+    getMailto: () => {
+      const { result } = state.get();
+      return buildMailto(getFormDefinition(FORM_ID).email, result.ok ? result.data : {});
+    },
+  },
+  share: true,
 });
 // Invalid YAML is the only hard block.
 state.subscribe(({ result }) => actions.setDownloadEnabled(result.ok));

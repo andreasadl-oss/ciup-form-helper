@@ -77,9 +77,9 @@ export interface AppendixDef {
 
 export interface EmailDef {
   to: string;
-  /** Template with `{data_key}` placeholders. */
+  /** Template with `{data_key}` placeholders and optional `[...]` parts (see `src/email.ts`). */
   subject: string;
-  /** Short French body, template with `{data_key}` placeholders. */
+  /** Short French body, same template syntax as `subject`. */
   body: string;
 }
 

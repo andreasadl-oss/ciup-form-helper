@@ -2,7 +2,8 @@
 import { PDFDocument } from 'pdf-lib';
 import { describe, expect, it } from 'vitest';
 import { parseLayout } from './layout';
-import { textRuns, whiteRects } from './pdf-inspect.test-helper';
+import { notoSansFromDisk } from './noto-sans.test-helper';
+import { drawnType0Widths, textRuns, whiteRects } from './pdf-inspect.test-helper';
 import { renderForm } from './render';
 
 const INK = '0.10196 0.16471 0.42353'; // #1a2a6c
@@ -123,5 +124,60 @@ describe('renderForm: lines fields', () => {
     expect(problems).toHaveLength(1);
     expect(problems[0].field).toBe('interet');
     expect(problems[0].message).toMatch(/^text too long \(\d+ lines, max 2\)$/);
+  });
+});
+
+describe('renderForm: characters the font cannot draw', () => {
+  it('replaces them with ? and reports them, instead of throwing', async () => {
+    const { pdf, problems } = await render({ nom: 'Fête 🎉 Ω' });
+    expect((await textRuns(pdf, 0)).map((r) => r.text)).toEqual(['Fête ? ?']);
+    expect(problems).toEqual([{ field: 'nom', message: 'cannot draw "🎉", "Ω" in this font (replaced with ?)' }]);
+  });
+
+  it('composes accents typed as combining marks before drawing', async () => {
+    const { pdf, problems } = await render({ nom: 'Soirée' });
+    expect((await textRuns(pdf, 0)).map((r) => r.text)).toEqual(['Soirée']);
+    expect(problems).toEqual([]);
+  });
+
+  it('checks template values and lines fields too', async () => {
+    const { problems } = await render({ heure_debut: '19h ⏰', interet: 'Ω' });
+    expect(problems.map((p) => p.field)).toEqual(['horaires', 'interet']);
+  });
+
+  it('checks the appendix and reports it as field "appendix"', async () => {
+    const { problems } = await render({
+      appendix: { title: 'Programme 🎶', columns: ['Titre'], rows: [['Ωδή']], outro: 'Ω' },
+    });
+    expect(problems).toEqual([{ field: 'appendix', message: 'cannot draw "🎶", "Ω", "δ", "ή" in this font (replaced with ?)' }]);
+  });
+});
+
+describe('renderForm with Noto Sans', () => {
+  const scripts = {
+    french: 'Soirée à l’œuvre « ça » — Noël',
+    cyrillic: 'Привет, мир',
+    greek: 'Καλησπέρα σας',
+    vietnamese: 'Tiếng Việt có dấu',
+  };
+
+  for (const [script, text] of Object.entries(scripts)) {
+    it(`draws ${script} text without problems`, async () => {
+      const { pdf, problems } = await renderForm({ formPdf: await blankForm(), layout, data: { nom: text }, fonts: notoSansFromDisk });
+      expect(problems).toEqual([]);
+      const [drawn] = await drawnType0Widths(pdf, 0);
+      expect(drawn.glyphs).toBe([...text].length);
+    });
+  }
+
+  it('reports an emoji, draws ? instead, and does not throw', async () => {
+    const { pdf, problems } = await renderForm({
+      formPdf: await blankForm(),
+      layout,
+      data: { nom: 'Fête 🎉' },
+      fonts: notoSansFromDisk,
+    });
+    expect(problems).toEqual([{ field: 'nom', message: 'cannot draw "🎉" in this font (replaced with ?)' }]);
+    expect((await drawnType0Widths(pdf, 0))[0].glyphs).toBe(6);
   });
 });

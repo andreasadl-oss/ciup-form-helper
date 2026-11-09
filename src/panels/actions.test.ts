@@ -21,6 +21,12 @@ function captureDownloads() {
   return saved;
 }
 
+function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
+  const button = [...root.querySelectorAll('button')].find((b) => b.textContent!.includes(text));
+  if (!button) throw new Error(`no "${text}" button`);
+  return button;
+}
+
 describe('actions panel', () => {
   it('downloads the PDF bytes unchanged under the given file name', async () => {
     const saved = captureDownloads();
@@ -62,6 +68,110 @@ describe('actions panel', () => {
     expect(button.disabled).toBe(true);
     panel.setDownloadEnabled(true);
     expect(button.disabled).toBe(false);
+  });
+
+  it('opens the mailto link built at click time, with an attach reminder next to the button', () => {
+    const root = document.createElement('div');
+    const opened: string[] = [];
+    let url = 'mailto:a@b.c?subject=first';
+    mountActionsPanel(root, {
+      getPdf: async () => new Uint8Array(),
+      fileName: 'f.pdf',
+      email: { getMailto: () => url, open: (u) => opened.push(u) },
+    });
+    url = 'mailto:a@b.c?subject=second';
+    const button = buttonByText(root, 'Email');
+    button.click();
+    expect(opened).toEqual(['mailto:a@b.c?subject=second']);
+    const reminder = button.parentElement!.textContent!;
+    expect(reminder).toMatch(/attach/i);
+    expect(reminder).toMatch(/PDF/);
+  });
+
+  it('has no email button unless asked for', () => {
+    const root = document.createElement('div');
+    mountActionsPanel(root, { getPdf: async () => new Uint8Array(), fileName: 'f.pdf' });
+    expect(root.querySelectorAll('button')).toHaveLength(1);
+  });
+
+  describe('share button', () => {
+    afterEach(() => {
+      delete (navigator as Partial<Navigator>).canShare;
+      delete (navigator as Partial<Navigator>).share;
+    });
+
+    function fakeWebShare(canShareFiles: boolean) {
+      const shared: ShareData[] = [];
+      Object.defineProperty(navigator, 'canShare', {
+        configurable: true,
+        value: (data?: ShareData) => canShareFiles && !!data?.files?.length,
+      });
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: ShareData) => void shared.push(data),
+      });
+      return shared;
+    }
+
+    const mountWithShare = (root: HTMLElement, getPdf = async () => new Uint8Array([1, 2, 3])) =>
+      mountActionsPanel(root, { getPdf, fileName: () => 'demande.pdf', share: true });
+
+    it('is hidden when the browser has no Web Share API', () => {
+      const root = document.createElement('div');
+      mountWithShare(root);
+      expect(root.textContent).not.toContain('Share');
+    });
+
+    it('is hidden when the browser cannot share files', () => {
+      fakeWebShare(false);
+      const root = document.createElement('div');
+      mountWithShare(root);
+      expect(root.textContent).not.toContain('Share');
+    });
+
+    it('shares the rendered PDF as a file when the browser can share files', async () => {
+      const shared = fakeWebShare(true);
+      const root = document.createElement('div');
+      mountWithShare(root);
+      buttonByText(root, 'Share').click();
+      await vi.waitFor(() => expect(shared).toHaveLength(1));
+      const [file] = shared[0].files!;
+      expect(file.name).toBe('demande.pdf');
+      expect(file.type).toBe('application/pdf');
+      expect(new Uint8Array(await file.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3]));
+    });
+
+    it('ignores the user cancelling the share sheet but reports other failures', async () => {
+      fakeWebShare(true);
+      const errors: unknown[] = [];
+      const root = document.createElement('div');
+      const failures: Error[] = [new DOMException('cancelled', 'AbortError'), new Error('boom')];
+      let calls = 0;
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async () => Promise.reject(failures[calls++]),
+      });
+      mountActionsPanel(root, {
+        getPdf: async () => new Uint8Array(),
+        fileName: 'f.pdf',
+        share: true,
+        onError: (e) => errors.push(e),
+      });
+      const share = buttonByText(root, 'Share');
+      share.click();
+      share.click();
+      await vi.waitFor(() => expect(calls).toBe(2));
+      await vi.waitFor(() => expect(errors).toHaveLength(1));
+      expect(String(errors[0])).toContain('boom');
+    });
+
+    it('is disabled together with the download', () => {
+      fakeWebShare(true);
+      const root = document.createElement('div');
+      const panel = mountWithShare(root);
+      panel.setDownloadEnabled(false);
+      expect(buttonByText(root, 'Share').disabled).toBe(true);
+    });
   });
 
   it('reports getPdf failures instead of downloading', async () => {

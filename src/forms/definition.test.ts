@@ -147,7 +147,7 @@ describe('getFormDefinition (CIUP form)', () => {
 
   it('carries the recipient, mail templates and the 21-day deadline', () => {
     expect(def.email.to).toBe('evenements.internes@ciup.fr');
-    expect(def.email.subject).toBe('Demande de manifestation : {nom}, {date_debut}');
+    expect(def.email.subject).toBe('Demande de manifestation[ : {nom}][, {date_debut}]');
     expect(def.email.body).toMatch(/^Bonjour,/);
     expect(def.email.body).toMatch(/[Ff]ormulaire et programme en pièce jointe/);
     expect(def.deadlineDays).toBe(21);

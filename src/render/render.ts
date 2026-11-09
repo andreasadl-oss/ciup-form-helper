@@ -51,7 +51,7 @@ export async function renderForm({ formPdf, layout, data, fonts = helvetica }: R
     drawField(page, name, field, data, faces, problems);
   }
 
-  if (data.appendix) drawAppendix(doc, data.appendix, faces);
+  if (data.appendix) drawAppendix(doc, drawableAppendix(data.appendix, faces, problems), faces);
 
   return { pdf: await doc.save(), problems };
 }
@@ -74,8 +74,9 @@ function drawField(
   const keys = dataKeysOf(name, field);
   if (!keys.some((key) => !isEmpty(data[key]))) return;
   const template = field.template ?? `{${name}}`;
-  const text = template.replace(/\{(\w+)\}/g, (_, key: string) => (isEmpty(data[key]) ? '' : String(data[key]))).trim();
   const font = faces.regular;
+  const filled = template.replace(/\{(\w+)\}/g, (_, key: string) => (isEmpty(data[key]) ? '' : String(data[key]))).trim();
+  const text = drawable([filled], [font], name, problems)[0];
 
   let lines: string[];
   let size = field.size;
@@ -102,6 +103,41 @@ function drawField(
 function drawLine(page: PDFPage, text: string, x: number, y: number, w: number, size: number, font: Face): void {
   page.drawRectangle({ x: x - 1, y: y - 3, width: w + 2, height: 11.5, color: WHITE });
   page.drawText(text, { x, y, size, font: font.pdfFont, color: INK });
+}
+
+/**
+ * Compose accents typed as combining marks (NFC), then replace characters the
+ * faces have no glyph for with `?`, reporting them once as a problem on `field`.
+ */
+function drawable(texts: string[], faces: Face[], field: string, problems: Problem[]): string[] {
+  const composed = texts.map((t) => t.normalize('NFC'));
+  const missing = [...new Set(composed.flatMap((t) => faces.flatMap((face) => face.canDraw(t))))];
+  if (missing.length === 0) return composed;
+  const list = missing.map((c) => `"${c}"`).join(', ');
+  problems.push({ field, message: `cannot draw ${list} in this font (replaced with ?)` });
+  const bad = new Set(missing);
+  return composed.map((t) => Array.from(t, (c) => (bad.has(c) ? '?' : c)).join(''));
+}
+
+/** The appendix with every string made drawable (problems reported on field "appendix"). */
+function drawableAppendix(appendix: Appendix, faces: EmbeddedFonts, problems: Problem[]): Appendix {
+  const texts: string[] = [];
+  const slot = (value: unknown): number => (value === undefined || value === null ? -1 : texts.push(String(value)) - 1);
+  const title = slot(appendix.title);
+  const intro = slot(appendix.intro);
+  const outro = slot(appendix.outro);
+  const columns = appendix.columns.map(slot);
+  const rows = appendix.rows.map((row) => row.map(slot));
+  const out = drawable(texts, [faces.regular, faces.bold], 'appendix', problems);
+  const get = (i: number) => (i < 0 ? undefined : out[i]);
+  return {
+    ...appendix,
+    title: get(title) ?? '',
+    intro: get(intro),
+    outro: get(outro),
+    columns: columns.map((i) => get(i) ?? ''),
+    rows: rows.map((row) => row.map(get)),
+  };
 }
 
 function isEmpty(value: unknown): boolean {

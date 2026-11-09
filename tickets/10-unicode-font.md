@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [02]
 ---
 # 10 Embed Unicode font (Noto Sans)

@@ -82,3 +82,15 @@ button {
 #preview-panel.is-rendering .preview-pages {
   opacity: 0.6;
 }
+
+.email-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.5em 0;
+}
+.email-reminder {
+  font-size: 0.9em;
+  font-weight: 600;
+}
