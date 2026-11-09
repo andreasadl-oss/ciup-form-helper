@@ -1,7 +1,7 @@
 // Wiring only: look up mount elements, create panels, connect them.
 // Feature logic lives in modules under src/ (src/panels/*, src/forms/*, src/render/*, ...).
 import exampleYaml from '../reference/example-data.yaml?raw';
-import { buildMailto } from './email';
+import { buildEmailText, buildMailto } from './email';
 import { pdfFileName } from './file-name';
 import { getFormDefinition } from './forms/definition';
 import { generatePrompt } from './forms/prompt';
@@ -97,6 +97,7 @@ const actions = mountActionsPanel(mount('actions-panel'), {
   onError: (error) => notices.show(t.actions.pdfFailed(String(error)), 'error'),
   email: {
     getMailto: () => buildMailto(def.email, lastValidData),
+    getText: () => buildEmailText(def.email, lastValidData),
   },
   share: true,
 });

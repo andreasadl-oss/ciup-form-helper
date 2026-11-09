@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildMailto, MAX_MAILTO_LENGTH } from './email';
+import { buildEmailText, buildMailto, MAX_MAILTO_LENGTH } from './email';
 import { getFormDefinition } from './forms/definition';
 
 const email = getFormDefinition('ciup-demande-manifestation-2026').email;
@@ -96,5 +96,17 @@ describe('buildMailto', () => {
     const { subject, body } = parse(url);
     expect(subject).toMatch(/^Demande de manifestation : x+…, 12\/12\/2026$/);
     expect(body).toContain(`, ${lieu}.`);
+  });
+});
+
+describe('buildEmailText', () => {
+  it('gives the same email as the mailto link, untruncated and with plain line breaks', () => {
+    const long = { ...full, nom: 'Soirée '.repeat(400).trim() };
+    const text = buildEmailText(email, long);
+    expect(text.to).toBe('evenements.internes@ciup.fr');
+    expect(text.subject).toBe(`Demande de manifestation : ${long.nom}, 12/12/2026`);
+    expect(text.body).not.toContain('\r');
+    const fromLink = parse(buildMailto(email, full));
+    expect(buildEmailText(email, full)).toEqual({ to: fromLink.to, subject: fromLink.subject, body: fromLink.body.replace(/\r\n/g, '\n') });
   });
 });

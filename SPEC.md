@@ -74,7 +74,7 @@ Ink colour is `#1a2a6c` and the font is Helvetica.
 - The value contains `TODO`: highlight the field.
 - The text doesn't fit (a `text` field is too wide, or `lines` still overflows at 7 pt).
 - The **date is less than 21 days from today** (prominent warning: "the CIUP may refuse late requests"). The date is in the past, or the end date is before the start date.
-- Contradictions: both Oui and Non ticked; "Concert" ticked with no `appendix` (the Sacem programme is required); "Payante" ticked (events at the Cité must be free); `remunere_oui` ticked with section 5 empty (a convention is required).
+- Contradictions: both Oui and Non ticked; "Concert" or "Soirée dansante" ticked with no `appendix` (the form asks for the Sacem programme for both); "Payante" ticked (events at the Cité must be free); `remunere_oui` ticked with section 5 empty (a convention is required).
 - Characters that Helvetica/WinAnsi can't draw (emoji, `⟨`, many non-Latin scripts): `pdf-lib` standard fonts will throw an error. Either replace or strip them with a warning, or embed a Unicode TTF font. Residents write names in many scripts, so embedding a font (e.g. Noto Sans) is probably worth it.
 
 ## Email

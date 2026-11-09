@@ -109,15 +109,17 @@ describe('validate', () => {
       expect(run({ ...paid, remunere_intermittent: true, remunere_association: true })).toEqual([]);
     });
 
-    it('warns when "Concert" is ticked without a programme page', () => {
-      expect(brief(run({ appendix: undefined }))).toEqual([{ key: 'type_concert', message: 'concertNoAppendix', params: {} }]);
+    it('warns when "Concert" or "Soirée dansante" is ticked without a programme page', () => {
+      expect(brief(run({ appendix: undefined }))).toEqual([{ key: 'type_concert', message: 'noProgramme', params: {} }]);
+      const party = { appendix: undefined, type_concert: undefined, concert_ouvert_oui: undefined, type_soiree: true, soiree_interne: true };
+      expect(brief(run(party))).toEqual([{ key: 'type_soiree', message: 'noProgramme', params: {} }]);
       expect(run({ appendix: undefined, type_concert: undefined, concert_ouvert_oui: undefined })).toEqual([]);
     });
 
     it('treats a programme page without any filled-in row as missing', () => {
       // What "Add programme page" in the web form creates.
       const fresh = { title: '', columns: ['#', 'Titre', 'Compositeur(s) / auteur(s)'], rows: [['', '', ''], [' ', '', '']] };
-      expect(brief(run({ appendix: fresh }))).toEqual([{ key: 'type_concert', message: 'concertNoAppendix', params: {} }]);
+      expect(brief(run({ appendix: fresh }))).toEqual([{ key: 'type_concert', message: 'noProgramme', params: {} }]);
     });
 
     it('warns when "Payante" is ticked', () => {

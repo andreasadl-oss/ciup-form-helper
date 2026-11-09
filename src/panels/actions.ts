@@ -1,5 +1,7 @@
 import { downloadBytes } from '../download';
-import { button } from './dom';
+import type { EmailText } from '../email';
+import { copyText } from './clipboard';
+import { button, el } from './dom';
 import { ui, type Lang } from '../i18n';
 
 export interface ActionsPanelOptions {
@@ -17,10 +19,15 @@ export interface ActionsPanelOptions {
   lang?: Lang;
   /** Called when getPdf fails, e.g. to show a notice. */
   onError?: (error: unknown) => void;
-  /** Adds an "Email" button that opens the user's mail client, plus a reminder to attach the PDF. */
+  /**
+   * Adds an "Email" button that opens the user's mail client, a reminder to attach the PDF,
+   * the address and a Cc hint in plain sight, and copy buttons for when `mailto:` is blocked.
+   */
   email?: {
     /** The `mailto:` URL, asked at click time (see `buildMailto`). */
     getMailto: () => string;
+    /** The same email as plain text, asked at copy time (see `buildEmailText`). */
+    getText: () => EmailText;
     /** Opens the URL. Default: navigate to it. */
     open?: (url: string) => void;
   };
@@ -87,15 +94,30 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
   root.append(row);
 
   if (options.email) {
-    const { getMailto, open = (url: string) => window.location.assign(url) } = options.email;
-    const group = document.createElement('div');
-    group.className = 'email-action';
-    const emailButton = button(t.email, () => open(getMailto()));
-    const reminder = document.createElement('span');
-    reminder.className = 'email-reminder';
-    reminder.textContent = t.emailReminder;
-    group.append(emailButton, reminder);
-    root.append(group);
+    const { getMailto, getText, open = (url: string) => window.location.assign(url) } = options.email;
+    const group = el('div', 'email-action');
+    group.append(button(t.email, () => open(getMailto())), el('span', 'email-reminder', t.emailReminder));
+
+    // The address in plain sight: it is printed on the official form, and the mail app may never open.
+    const sendTo = el('p', 'email-to', `${t.sendTo} `);
+    sendTo.append(el('strong', undefined, getText().to));
+    const cc = el('p', 'email-cc', t.ccHouse);
+
+    // Brave and some setups block mailto:, so the user can write the email by hand.
+    const status = el('span', 'copy-status');
+    status.setAttribute('role', 'status');
+    const copyButton = (label: string, part: keyof EmailText) =>
+      button(label, async () => {
+        status.textContent = (await copyText(getText()[part])) ? t.copied : t.copyFailed;
+      });
+    const copyRow = el('div', 'button-row email-copy');
+    copyRow.append(
+      copyButton(t.copyAddress, 'to'),
+      copyButton(t.copySubject, 'subject'),
+      copyButton(t.copyBody, 'body'),
+      status,
+    );
+    root.append(group, sendTo, cc, el('p', 'email-fallback', t.noMailApp), copyRow);
   }
 
   return {

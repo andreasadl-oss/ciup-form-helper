@@ -75,12 +75,14 @@ describe('parseFormDefinition consistency checks', () => {
 
   it('reads the validation rules, all optional', () => {
     expect(parseFormDefinition('f', fixtureLayout, fixtureMeta()).rules).toEqual({});
-    const def = parseFormDefinition('f', fixtureLayout, fixtureMeta((m) => (m.validation = { concert: 'oui', paid_entry: 'non', paid_artist: 'oui', third_party_section: 's' })));
-    expect(def.rules).toEqual({ concert: 'oui', paidEntry: 'non', paidArtist: 'oui', thirdPartySection: 's' });
+    const def = parseFormDefinition('f', fixtureLayout, fixtureMeta((m) => (m.validation = { needs_programme: ['oui', 'non'], paid_entry: 'non', paid_artist: 'oui', third_party_section: 's' })));
+    expect(def.rules).toEqual({ needsProgramme: ['oui', 'non'], paidEntry: 'non', paidArtist: 'oui', thirdPartySection: 's' });
   });
 
   it('rejects validation rules that point at non-check fields or unknown sections', () => {
-    expect(parseWith((m) => (m.validation = { concert: 'nom' }))).toThrow(/validation\.concert.*nom.*not a check field/);
+    expect(parseWith((m) => (m.validation = { needs_programme: ['oui', 'nom'] }))).toThrow(/validation\.needs_programme.*nom.*not a check field/);
+    expect(parseWith((m) => (m.validation = { needs_programme: 'oui' }))).toThrow(/needs_programme must be a list/);
+    expect(parseWith((m) => (m.validation = { paid_entry: ['oui'] }))).toThrow(/paid_entry must be a single name/);
     expect(parseWith((m) => (m.validation = { paid_entry: 'nope' }))).toThrow(/validation\.paid_entry.*nope/);
     expect(parseWith((m) => (m.validation = { paid_artist: 'oui' }))).toThrow(/paid_artist.*third_party_section/);
     expect(parseWith((m) => (m.validation = { paid_artist: 'oui', third_party_section: 'x' }))).toThrow(/third_party_section.*unknown section "x"/);
@@ -162,7 +164,7 @@ describe('getFormDefinition (CIUP form)', () => {
   });
 
   it('carries the CIUP validation rules', () => {
-    expect(def.rules).toEqual({ concert: 'type_concert', paidEntry: 'entree_payante', paidArtist: 'remunere_oui', thirdPartySection: 'tiers' });
+    expect(def.rules).toEqual({ needsProgramme: ['type_concert', 'type_soiree'], paidEntry: 'entree_payante', paidArtist: 'remunere_oui', thirdPartySection: 'tiers' });
   });
 
   it('carries the recipient, mail templates and the 21-day deadline', () => {

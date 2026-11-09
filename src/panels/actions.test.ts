@@ -21,6 +21,8 @@ function captureDownloads() {
   return saved;
 }
 
+const getText = () => ({ to: 'evenements.internes@ciup.fr', subject: 'Demande de manifestation', body: 'Bonjour,\n\nCordialement,' });
+
 function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
   const button = [...root.querySelectorAll('button')].find((b) => b.textContent!.includes(text));
   if (!button) throw new Error(`no "${text}" button`);
@@ -69,7 +71,7 @@ describe('actions panel', () => {
     const panel = mountActionsPanel(root, {
       getPdf: async () => new Uint8Array(),
       fileName: 'f.pdf',
-      email: { getMailto: () => 'mailto:x', open: () => {} },
+      email: { getMailto: () => 'mailto:x', getText, open: () => {} },
     });
     panel.setPdfActionsEnabled(false);
     expect(buttonByText(root, 'Email').disabled).toBe(false);
@@ -82,7 +84,7 @@ describe('actions panel', () => {
     mountActionsPanel(root, {
       getPdf: async () => new Uint8Array(),
       fileName: 'f.pdf',
-      email: { getMailto: () => url, open: (u) => opened.push(u) },
+      email: { getMailto: () => url, getText, open: (u) => opened.push(u) },
     });
     url = 'mailto:a@b.c?subject=second';
     const button = buttonByText(root, 'Email');
@@ -91,6 +93,37 @@ describe('actions panel', () => {
     const reminder = button.parentElement!.textContent!;
     expect(reminder).toMatch(/attach/i);
     expect(reminder).toMatch(/PDF/);
+  });
+
+  it('shows the address and a Cc hint in plain text, for when the mail app does not open', () => {
+    const root = document.createElement('div');
+    mountActionsPanel(root, { getPdf: async () => new Uint8Array(), fileName: 'f.pdf', email: { getMailto: () => 'mailto:x', getText } });
+    expect(root.querySelector('.email-to')!.textContent).toBe('Send it to: evenements.internes@ciup.fr');
+    expect(root.querySelector('.email-cc')!.textContent).toMatch(/Cc your house/);
+    expect(root.querySelector('.email-fallback')!.textContent).toMatch(/Brave/);
+  });
+
+  it('copies the address, subject and text as they are at click time', async () => {
+    const copied: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (text: string) => void copied.push(text) },
+    });
+    const root = document.createElement('div');
+    let subject = 'first';
+    mountActionsPanel(root, {
+      getPdf: async () => new Uint8Array(),
+      fileName: 'f.pdf',
+      email: { getMailto: () => 'mailto:x', getText: () => ({ ...getText(), subject }) },
+    });
+    subject = 'Demande de manifestation : Soirée';
+    buttonByText(root, 'Copy address').click();
+    buttonByText(root, 'Copy subject').click();
+    buttonByText(root, 'Copy text').click();
+    await vi.waitFor(() => expect(copied).toHaveLength(3));
+    expect(copied).toEqual(['evenements.internes@ciup.fr', 'Demande de manifestation : Soirée', 'Bonjour,\n\nCordialement,']);
+    await vi.waitFor(() => expect(root.querySelector('.copy-status')!.textContent).toBe('Copied!'));
+    Reflect.deleteProperty(navigator, 'clipboard');
   });
 
   it('has no email button unless asked for', () => {
@@ -213,11 +246,12 @@ describe('actions panel', () => {
     mountActionsPanel(root, {
       getPdf: async () => new Uint8Array(),
       fileName: 'f.pdf',
-      email: { getMailto: () => 'mailto:x' },
+      email: { getMailto: () => 'mailto:x', getText },
       lang: 'fr',
     });
     expect(buttonByText(root, 'Télécharger le PDF')).toBeTruthy();
     expect(root.textContent).toContain("N'oubliez pas de joindre le PDF");
+    expect(root.textContent).toContain('À envoyer à : evenements.internes@ciup.fr');
   });
   it('reports getPdf failures instead of downloading', async () => {
     const saved = captureDownloads();

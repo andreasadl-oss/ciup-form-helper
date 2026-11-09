@@ -104,8 +104,8 @@ export type PromptDef = Record<keyof Bilingual, PromptTexts>;
  * Each is optional: a form without it skips that check.
  */
 export interface RulesDef {
-  /** Check field that needs the appendix (CIUP: a concert needs its Sacem programme). */
-  concert?: string;
+  /** Check fields that need the appendix (CIUP: a concert or dance party needs its Sacem programme). */
+  needsProgramme?: string[];
   /** Check field that must not be ticked (CIUP: events must be free). */
   paidEntry?: string;
   /** Check field that needs `thirdPartySection` filled in (CIUP: a paid artist needs a convention). */
@@ -167,7 +167,7 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
     prompt: PromptDef;
     ciup_rules: Bilingual;
     appendix: Omit<AppendixDef, 'key'>;
-    validation?: Record<string, string>;
+    validation?: Record<string, string | string[]>;
   };
 
   const fail = (message: string): never => {
@@ -239,24 +239,33 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
   };
 }
 
-const RULE_NAMES = { concert: 'concert', paid_entry: 'paidEntry', paid_artist: 'paidArtist', third_party_section: 'thirdPartySection' } as const;
+const RULE_NAMES = { needs_programme: 'needsProgramme', paid_entry: 'paidEntry', paid_artist: 'paidArtist', third_party_section: 'thirdPartySection' } as const;
 
 function parseRules(
-  raw: Record<string, string>,
+  raw: Record<string, string | string[]>,
   layoutFields: Record<string, Raw>,
   sectionIds: Set<string>,
   fail: (message: string) => never,
 ): RulesDef {
   const rules: RulesDef = {};
+  const checkField = (name: string, value: string) => {
+    const field = layoutFields[value] ?? fail(`validation.${name} references "${value}", which is not in layout.yaml`);
+    if (field.type !== 'check') fail(`validation.${name} references "${value}", which is not a check field`);
+  };
   for (const [name, value] of Object.entries(raw)) {
     const key = RULE_NAMES[name as keyof typeof RULE_NAMES] ?? fail(`validation.${name} is not a known rule (${Object.keys(RULE_NAMES).join(', ')})`);
-    if (key === 'thirdPartySection') {
-      if (!sectionIds.has(value)) fail(`validation.third_party_section has unknown section "${value}"`);
-    } else {
-      const field = layoutFields[value] ?? fail(`validation.${name} references "${value}", which is not in layout.yaml`);
-      if (field.type !== 'check') fail(`validation.${name} references "${value}", which is not a check field`);
+    if (key === 'needsProgramme') {
+      if (!Array.isArray(value)) fail('validation.needs_programme must be a list of check fields');
+      for (const v of value) checkField(name, v);
+      rules.needsProgramme = value as string[];
+      continue;
     }
-    rules[key] = value;
+    if (typeof value !== 'string') fail(`validation.${name} must be a single name`);
+    const single = value as string;
+    if (key === 'thirdPartySection') {
+      if (!sectionIds.has(single)) fail(`validation.third_party_section has unknown section "${single}"`);
+    } else checkField(name, single);
+    rules[key] = single;
   }
   if (rules.paidArtist !== undefined && rules.thirdPartySection === undefined) fail('validation.paid_artist needs validation.third_party_section');
   return rules;

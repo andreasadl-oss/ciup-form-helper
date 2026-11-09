@@ -29,7 +29,7 @@ export type MessageKey =
   | 'tooSoon'
   | 'endBeforeStart'
   | 'groupConflict'
-  | 'concertNoAppendix'
+  | 'noProgramme'
   | 'paidEntry'
   | 'paidNoThirdParty'
   | 'tooWide'
@@ -92,8 +92,10 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
     if (on.length > 1) add(on[0], 'groupConflict', { fields: on });
   }
   // Form-specific rules (meta.yaml `validation`); each is skipped when the form has none.
-  const { concert, paidEntry, paidArtist, thirdPartySection } = def.rules;
-  if (concert && ticked(concert) && !appendixHasRows(data[def.appendix.key])) add(concert, 'concertNoAppendix');
+  const { needsProgramme = [], paidEntry, paidArtist, thirdPartySection } = def.rules;
+  if (!appendixHasRows(data[def.appendix.key])) {
+    for (const key of needsProgramme.filter(ticked)) add(key, 'noProgramme');
+  }
   if (paidEntry && ticked(paidEntry)) add(paidEntry, 'paidEntry');
   if (paidArtist && ticked(paidArtist)) {
     const thirdParty = def.fields.filter((f) => f.section === thirdPartySection).flatMap((f) => f.dataKeys);

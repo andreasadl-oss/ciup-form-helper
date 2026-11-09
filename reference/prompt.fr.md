@@ -30,7 +30,7 @@ nom: ""                        # Nom de la manifestation
 type_conference: true
 conference_ouvert_oui: true
 conference_ouvert_non: true
-type_soiree: true              # Soirée dansante
+type_soiree: true              # Soirée dansante. Programme obligatoire (Sacem) : remplir la page programme
 soiree_interne: true           # Uniquement les résidents de la maison
 soiree_externe: true           # Autres résidents / public extérieur
 type_concert: true             # Programme obligatoire (Sacem) : remplir la page programme
@@ -83,7 +83,7 @@ tiers_infos: ""                # Autres informations
 interet: ""                    # Objectifs culturels, éducatifs ou communautaires de la manifestation
 universites: ""                # Universités / écoles des participants
 
-# Concerts uniquement : programme pour la déclaration Sacem (page supplémentaire).
+# Concerts et soirées dansantes uniquement : programme pour la déclaration Sacem (page supplémentaire).
 appendix:
   title: "Programme : <nom de l'événement>"
   intro: "<interprètes, durée>"

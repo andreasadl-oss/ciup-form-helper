@@ -106,7 +106,7 @@ ciup_rules:
 
 # Contradiction checks (validation warnings). Field names must be check fields.
 validation:
-  concert: type_concert          # ticked: needs the programme page (Sacem)
+  needs_programme: [type_concert, type_soiree]   # ticked: needs the programme page (the form says "Sacem (joindre le programme)" for both)
   paid_entry: entree_payante     # ticked: events at the Cité must be free
   paid_artist: remunere_oui      # ticked: needs a convention, so section 5 filled in
   third_party_section: tiers
@@ -125,14 +125,14 @@ sections:
   - id: interet
     title: {en: "6. Purpose of the event", fr: "6. Intérêt de la manifestation"}
   - id: appendix
-    title: {en: "Concert programme (Sacem)", fr: "Programme (Sacem)"}
+    title: {en: "Programme (Sacem)", fr: "Programme (Sacem)"}
 
 appendix:
   section: appendix
   label: {en: "Programme page", fr: "Page programme"}
   help:
-    en: "Concerts only: programme for the Sacem declaration (extra page)."
-    fr: "Concerts uniquement : programme pour la déclaration Sacem (page supplémentaire)."
+    en: "Concerts and dance parties only: programme for the Sacem declaration (extra page)."
+    fr: "Concerts et soirées dansantes uniquement : programme pour la déclaration Sacem (page supplémentaire)."
   # Shown in the prompt as the shape of the `appendix` key. Placeholders are in French,
   # like the values, so both prompt languages share them.
   example:
@@ -194,7 +194,7 @@ fields:
   type_soiree:
     section: evenement
     label: {en: "Party", fr: "Soirée dansante"}
-    help: {en: "Dance party", fr: "Soirée dansante"}
+    help: {en: "Dance party. Requires a programme (Sacem): fill in the programme page", fr: "Soirée dansante. Programme obligatoire (Sacem) : remplir la page programme"}
   soiree_interne:
     section: evenement
     label: {en: "Party: house residents only", fr: "Soirée : résidents de la maison uniquement"}

@@ -1,29 +1,11 @@
 import { ui, type Lang } from '../i18n';
+import { copyText } from './clipboard';
 
 export interface PromptPanelOptions {
   /** The generated prompt (see `generatePrompt`). */
   prompt: string;
   /** Interface language. Default: 'en'. */
   lang?: Lang;
-}
-
-/** Copy with the Clipboard API, or by selecting the box and `execCommand('copy')` where it is unavailable. */
-async function copyText(box: HTMLTextAreaElement): Promise<boolean> {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(box.value);
-      return true;
-    } catch {
-      // Denied or insecure context: try the fallback.
-    }
-  }
-  box.focus();
-  box.select();
-  try {
-    return document.execCommand('copy');
-  } catch {
-    return false;
-  }
 }
 
 /** Prompt panel (option A): instructions, the prompt in a read-only box, and a copy button. */
@@ -58,7 +40,7 @@ export function mountPromptPanel(root: HTMLElement, options: PromptPanelOptions)
   status.setAttribute('role', 'status');
 
   button.addEventListener('click', async () => {
-    status.textContent = (await copyText(box)) ? t.copied : t.copyFailed;
+    status.textContent = (await copyText(box.value, box)) ? t.copied : t.copyFailed;
   });
 
   const actions = document.createElement('p');

@@ -30,7 +30,7 @@ nom: ""                        # Event name
 type_conference: true
 conference_ouvert_oui: true
 conference_ouvert_non: true
-type_soiree: true              # Dance party
+type_soiree: true              # Dance party. Requires a programme (Sacem): fill in the programme page
 soiree_interne: true           # Only residents of the house
 soiree_externe: true           # Other residents / outside public
 type_concert: true             # Requires a programme (Sacem): fill in the programme page
@@ -83,7 +83,7 @@ tiers_infos: ""                # Other information
 interet: ""                    # Cultural / educational / community goals of the event
 universites: ""                # Universities/schools of the participants
 
-# Concerts only: programme for the Sacem declaration (extra page).
+# Concerts and dance parties only: programme for the Sacem declaration (extra page).
 appendix:
   title: "Programme : <nom de l'événement>"
   intro: "<interprètes, durée>"

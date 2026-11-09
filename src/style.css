@@ -211,6 +211,21 @@ input[type='checkbox'] {
   font-size: 0.9em;
   font-weight: 600;
 }
+.email-to,
+.email-cc,
+.email-fallback {
+  margin: 0.4em 0;
+}
+.email-to strong {
+  /* Long address: wrap on phones instead of scrolling sideways. */
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.email-cc,
+.email-fallback {
+  font-size: 0.9em;
+  color: #555;
+}
 
 /* Form panel (src/panels/form.ts) */
 #form-panel fieldset {

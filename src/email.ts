@@ -41,10 +41,25 @@ export function buildMailto(email: EmailDef, data: FillData): string {
   return url;
 }
 
+export interface EmailText {
+  to: string;
+  subject: string;
+  body: string;
+}
+
+/** The same email as plain text, untruncated, for writing it by hand where `mailto:` is blocked. */
+export function buildEmailText(email: EmailDef, data: FillData): EmailText {
+  return compose(email, textValues(data));
+}
+
+function compose(email: EmailDef, values: Map<string, string>): EmailText {
+  return { to: email.to, subject: fill(email.subject, values), body: fill(email.body, values) };
+}
+
 function toUrl(email: EmailDef, values: Map<string, string>): string {
-  const subject = fill(email.subject, values);
-  const body = fill(email.body, values).split(/\r?\n/).join('\r\n');
-  return `mailto:${email.to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const { subject, body } = compose(email, values);
+  const crlf = body.split(/\r?\n/).join('\r\n');
+  return `mailto:${email.to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(crlf)}`;
 }
 
 /** Present values only: TODO markers, booleans and other objects count as empty; a programme page with rows as ''. */
