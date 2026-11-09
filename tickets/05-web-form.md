@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [03, 04]
 ---
 # 05 Generated web form with two-way sync
