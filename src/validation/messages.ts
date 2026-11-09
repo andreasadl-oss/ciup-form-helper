@@ -7,7 +7,7 @@ import type { MessageKey, Warning } from './validate';
 export type MessageTable = Record<MessageKey, (params: Warning['params']) => string>;
 
 const en: MessageTable = {
-  unknownKey: (p) => `Unknown key "${p.key}". Did you mean "${p.suggestion}"?`,
+  unknownKey: (p) => (p.suggestion === undefined ? `Unknown key "${p.key}".` : `Unknown key "${p.key}". Did you mean "${p.suggestion}"?`),
   todo: () => 'Still contains TODO: fill this in.',
   badDate: (p) => `"${p.value}" is not a date written jj/mm/aaaa.`,
   datePast: () => 'This date is in the past.',
@@ -24,7 +24,8 @@ const en: MessageTable = {
 };
 
 const fr = {
-  unknownKey: (p) => `Clé inconnue « ${p.key} ». Vouliez-vous dire « ${p.suggestion} » ?`,
+  unknownKey: (p) =>
+    p.suggestion === undefined ? `Clé inconnue « ${p.key} ».` : `Clé inconnue « ${p.key} ». Vouliez-vous dire « ${p.suggestion} » ?`,
   todo: () => 'Contient encore TODO : à compléter.',
   badDate: (p) => `« ${p.value} » n'est pas une date au format jj/mm/aaaa.`,
   datePast: () => 'Cette date est passée.',

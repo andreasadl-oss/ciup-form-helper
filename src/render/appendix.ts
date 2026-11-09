@@ -19,6 +19,17 @@ export interface Appendix {
   outro?: string;
 }
 
+/**
+ * Whether an appendix data value has at least one row with a non-blank cell.
+ * An empty table (as "Add programme page" creates) counts as no appendix.
+ */
+export function appendixHasRows(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const rows = (value as { rows?: unknown }).rows;
+  if (!Array.isArray(rows)) return false;
+  return rows.some((row) => (Array.isArray(row) ? row : [row]).some((cell) => cell != null && String(cell).trim() !== ''));
+}
+
 const A4: [number, number] = [595.2756, 841.8898];
 const MARGIN_X = 50;
 const MARGIN_Y = 72;

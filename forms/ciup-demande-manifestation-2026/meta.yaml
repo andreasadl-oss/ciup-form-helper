@@ -87,7 +87,7 @@ groups:
   entree_tarif: {fields: [entree_gratuite, entree_payante]}
   artiste: {fields: [artiste_oui, artiste_non]}
   remunere: {fields: [remunere_oui, remunere_non]}
-  remunere_statut: {fields: [remunere_intermittent, remunere_association]}
+  # No group for remunere_intermittent / remunere_association: both can apply.
 
 fields:
   # 1. Demandeur

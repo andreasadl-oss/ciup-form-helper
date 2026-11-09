@@ -30,6 +30,10 @@ describe('validate', () => {
     ]);
   });
 
+  it('gives no suggestion when no valid key is close to the unknown one', () => {
+    expect(brief(run({ couleur: 'bleu' }))).toEqual([{ key: 'couleur', message: 'unknownKey', params: { key: 'couleur' } }]);
+  });
+
   it('flags TODO values, including inside the programme page', () => {
     const appendix = { ...(example.appendix as object), rows: [['1', 'TODO titre', 'x']] };
     expect(brief(run({ lieu: 'TODO salle', appendix }))).toEqual([
@@ -50,9 +54,24 @@ describe('validate', () => {
       expect(run({}, new Date(2026, 10, 21, 23, 30))).toEqual([]);
     });
 
-    it('warns when the date is in the past (and not also "too soon")', () => {
+    it('warns on each date in the past (and not also "too soon")', () => {
       expect(brief(run({ date_debut: '01/10/2026', date_fin: '01/10/2026' }))).toEqual([
         { key: 'date_debut', message: 'datePast', params: {} },
+        { key: 'date_fin', message: 'datePast', params: {} },
+      ]);
+    });
+
+    it('warns about a past end date even when the start date is fine', () => {
+      expect(brief(run({ date_fin: '01/10/2026' }))).toEqual([
+        { key: 'date_fin', message: 'datePast', params: {} },
+        { key: 'date_fin', message: 'endBeforeStart', params: {} },
+      ]);
+    });
+
+    it('does not treat the end date as the start when the start date is missing', () => {
+      expect(brief(run({ date_debut: undefined }, new Date(2026, 11, 1)))).toEqual([]);
+      expect(brief(run({ date_debut: undefined, date_fin: '01/10/2026' }))).toEqual([
+        { key: 'date_fin', message: 'datePast', params: {} },
       ]);
     });
 
@@ -81,9 +100,20 @@ describe('validate', () => {
       ]);
     });
 
+    it('accepts an artist paid both as intermittent and through an association', () => {
+      const paid = { remunere_non: undefined, remunere_oui: true, tiers_nom: 'Association Exemple' };
+      expect(run({ ...paid, remunere_intermittent: true, remunere_association: true })).toEqual([]);
+    });
+
     it('warns when "Concert" is ticked without a programme page', () => {
       expect(brief(run({ appendix: undefined }))).toEqual([{ key: 'type_concert', message: 'concertNoAppendix', params: {} }]);
       expect(run({ appendix: undefined, type_concert: undefined, concert_ouvert_oui: undefined })).toEqual([]);
+    });
+
+    it('treats a programme page without any filled-in row as missing', () => {
+      // What "Add programme page" in the web form creates.
+      const fresh = { title: '', columns: ['#', 'Titre', 'Compositeur(s) / auteur(s)'], rows: [['', '', ''], [' ', '', '']] };
+      expect(brief(run({ appendix: fresh }))).toEqual([{ key: 'type_concert', message: 'concertNoAppendix', params: {} }]);
     });
 
     it('warns when "Payante" is ticked', () => {

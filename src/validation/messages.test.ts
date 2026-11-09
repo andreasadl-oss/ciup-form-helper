@@ -19,6 +19,11 @@ describe('formatWarning', () => {
     );
   });
 
+  it('says only "unknown key" when there is no suggestion', () => {
+    expect(formatWarning(w('unknownKey', { key: 'couleur' }))).toBe('Unknown key "couleur".');
+    expect(formatWarning(w('unknownKey', { key: 'couleur' }), messages.fr)).toBe('Clé inconnue « couleur ».');
+  });
+
   it('has an English text for every message', () => {
     for (const [key, text] of Object.entries(messages.en)) {
       expect(text({ key: 'x', suggestion: 'y', days: 1, deadlineDays: 21, value: 'v', fields: 'a, b', lines: 5, maxLines: 4, chars: '🎸' }), key).not.toBe('');

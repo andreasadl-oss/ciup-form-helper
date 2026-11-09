@@ -6,7 +6,7 @@
  * `formatWarning` (`./messages`), so the UI can translate them.
  */
 import type { FormDefinition } from '../forms/definition';
-import { dataKeysOf, fieldText, fitLines, type FontMetrics, type Layout } from '../render';
+import { appendixHasRows, dataKeysOf, fieldText, fitLines, type FontMetrics, type Layout } from '../render';
 
 export type Severity = 'high' | 'normal';
 
@@ -46,30 +46,36 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
   const valid = new Set(def.validKeys);
   for (const key of Object.keys(data)) {
     if (valid.has(key)) continue;
-    add(key, 'unknownKey', { key, suggestion: closest(key, def.validKeys) });
+    const suggestion = closest(key, def.validKeys);
+    add(key, 'unknownKey', suggestion === undefined ? { key } : { key, suggestion });
   }
 
   for (const [key, value] of Object.entries(data)) {
     if (strings(value).some((s) => s.includes('TODO'))) add(key, 'todo');
   }
 
-  // Dates: the first date key is the start, the last one the end.
-  const dates: { key: string; day: number }[] = [];
-  for (const k of def.fields.flatMap((f) => f.dataKeys).filter((k) => k.format === 'date')) {
-    const value = data[k.key];
+  // Dates: the form's first date key is the start, its last one the end. Each past date is flagged on its own key.
+  const dateKeys = def.fields.flatMap((f) => f.dataKeys).filter((k) => k.format === 'date').map((k) => k.key);
+  const startKey = dateKeys[0];
+  const endKey = dateKeys.length > 1 ? dateKeys[dateKeys.length - 1] : undefined;
+  const todayNumber = dayNumber(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  const days = new Map<string, number>();
+  for (const key of dateKeys) {
+    const value = data[key];
     if (isBlank(value) || String(value).includes('TODO')) continue;
     const day = parseDate(String(value));
-    if (day === undefined) add(k.key, 'badDate', { value: String(value) });
-    else dates.push({ key: k.key, day });
+    if (day === undefined) {
+      add(key, 'badDate', { value: String(value) });
+      continue;
+    }
+    days.set(key, day);
+    const ahead = day - todayNumber;
+    if (ahead < 0) add(key, 'datePast', {}, 'high');
+    else if (key === startKey && ahead < def.deadlineDays) add(key, 'tooSoon', { days: ahead, deadlineDays: def.deadlineDays }, 'high');
   }
-  const [start] = dates;
-  const end = dates.length > 1 ? dates[dates.length - 1] : undefined;
-  if (start) {
-    const days = start.day - dayNumber(today.getFullYear(), today.getMonth() + 1, today.getDate());
-    if (days < 0) add(start.key, 'datePast', {}, 'high');
-    else if (days < def.deadlineDays) add(start.key, 'tooSoon', { days, deadlineDays: def.deadlineDays }, 'high');
-  }
-  if (start && end && end.day < start.day) add(end.key, 'endBeforeStart');
+  const start = days.get(startKey);
+  const end = endKey === undefined ? undefined : days.get(endKey);
+  if (start !== undefined && end !== undefined && end < start) add(endKey!, 'endBeforeStart');
 
   // Contradictions.
   const ticked = (key: string) => data[key] === true;
@@ -78,7 +84,7 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
     if (on.length > 1) add(on[0], 'groupConflict', { fields: on.join(', ') });
   }
   const has = (key: string) => valid.has(key);
-  if (has(RULES.concert) && ticked(RULES.concert) && isBlank(data[def.appendix.key])) add(RULES.concert, 'concertNoAppendix');
+  if (has(RULES.concert) && ticked(RULES.concert) && !appendixHasRows(data[def.appendix.key])) add(RULES.concert, 'concertNoAppendix');
   if (has(RULES.paidEntry) && ticked(RULES.paidEntry)) add(RULES.paidEntry, 'paidEntry');
   if (has(RULES.paidArtist) && ticked(RULES.paidArtist)) {
     const thirdParty = def.fields.filter((f) => f.section === RULES.thirdPartySection).flatMap((f) => f.dataKeys);
@@ -170,9 +176,10 @@ function strings(value: unknown): string[] {
   return [];
 }
 
-function closest(key: string, candidates: string[]): string {
-  let best = candidates[0];
-  let bestDistance = Infinity;
+/** The closest candidate, if it is close enough to be a likely typo: at most max(2, a third of the key's length) edits away. */
+function closest(key: string, candidates: string[]): string | undefined {
+  let best: string | undefined;
+  let bestDistance = Math.max(2, Math.floor(key.length / 3)) + 1;
   for (const c of candidates) {
     const d = editDistance(key, c);
     if (d < bestDistance) [best, bestDistance] = [c, d];

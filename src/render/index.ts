@@ -1,6 +1,6 @@
 // Public API of the renderer. Pure: no DOM, usable in tests and workers.
 export { renderForm, fieldText, INK, type FillData, type Problem, type RenderInput, type RenderResult } from './render';
-export { type Appendix } from './appendix';
+export { appendixHasRows, type Appendix } from './appendix';
 export {
   parseLayout,
   dataKeysOf,
