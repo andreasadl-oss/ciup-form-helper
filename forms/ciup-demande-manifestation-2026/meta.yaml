@@ -13,12 +13,15 @@
 recipient: evenements.internes@ciup.fr
 deadline_days: 21
 
+# email.subject / body: {data_key} placeholders. A [bracketed part] is dropped when any
+# placeholder inside it is empty (or TODO), so the sentence still reads well.
+# No signature: the user signs in their own mail client.
 email:
-  subject: "Demande de manifestation : {nom}, {date_debut}"
+  subject: "Demande de manifestation[ : {nom}][, {date_debut}]"
   body: |-
     Bonjour,
 
-    Veuillez trouver ci-joint notre demande de manifestation « {nom} » ({maison}), le {date_debut} de {heure_debut} à {heure_fin}, {lieu}.
+    Veuillez trouver ci-joint notre demande de manifestation[ « {nom} »][ ({maison})][, le {date_debut}][ de {heure_debut} à {heure_fin}][, {lieu}].
     Formulaire et programme en pièce jointe.
 
     Cordialement,

@@ -61,3 +61,15 @@ button {
   background: #fde2e2;
   white-space: pre-wrap;
 }
+
+.email-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.5em 0;
+}
+.email-reminder {
+  font-size: 0.9em;
+  font-weight: 600;
+}
