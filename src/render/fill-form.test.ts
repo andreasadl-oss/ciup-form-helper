@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { PDFDocument } from 'pdf-lib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getForm } from '../forms/registry';
-import { createFormFiller, EXAMPLE_DATA } from './fill-form';
+import { exampleData } from '../example-data.test-helper';
+import { createFormFiller } from './fill-form';
 import { notoSansFromDisk } from './noto-sans.test-helper';
 import { drawnType0Widths } from './pdf-inspect.test-helper';
 
@@ -16,18 +17,22 @@ describe('createFormFiller', () => {
       loads++;
       return blank;
     }, notoSansFromDisk);
-    const first = await fill(EXAMPLE_DATA);
+    const first = await fill(exampleData());
     await fill({ nom: 'Autre' });
     expect(loads).toBe(1);
     expect(first.problems).toEqual([]);
     expect((await PDFDocument.load(first.pdf)).getPageCount()).toBe(3);
   });
-});
 
-describe('EXAMPLE_DATA', () => {
-  it('is reference/example-data.yaml', () => {
-    expect(EXAMPLE_DATA).toMatchObject({ maison: 'Maison Exemple', type_concert: true });
-    expect(EXAMPLE_DATA.appendix?.rows).toHaveLength(2);
+  it('shares the one load with blankPdf(), e.g. to preload the form', async () => {
+    let loads = 0;
+    const fill = createFormFiller(getForm('ciup-demande-manifestation-2026'), async () => {
+      loads++;
+      return blank;
+    }, notoSansFromDisk);
+    expect(await fill.blankPdf()).toBe(blank);
+    await fill({ nom: 'Soirée' });
+    expect(loads).toBe(1);
   });
 });
 
@@ -50,7 +55,7 @@ describe('createFormFiller fonts', () => {
 
   it('keeps the example PDF small with subset Noto Sans', async () => {
     const fill = createFormFiller(getForm('ciup-demande-manifestation-2026'), async () => blank, notoSansFromDisk);
-    const { pdf, problems } = await fill(EXAMPLE_DATA);
+    const { pdf, problems } = await fill(exampleData());
     expect(problems).toEqual([]);
     expect(pdf.length - blank.length).toBeLessThan(50_000);
   });

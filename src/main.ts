@@ -5,7 +5,7 @@ import { buildMailto } from './email';
 import { pdfFileName } from './file-name';
 import { getFormDefinition } from './forms/definition';
 import { generatePrompt } from './forms/prompt';
-import { getForm, loadFormPdf } from './forms/registry';
+import { getForm } from './forms/registry';
 import { ui } from './i18n';
 import { mountActionsPanel } from './panels/actions';
 import { mountFormPanel } from './panels/form';
@@ -51,9 +51,7 @@ const draft = createDraftStore(FORM_ID);
 const state = createAppState(draft.load() ?? '');
 persistDraft(state, draft);
 
-let pdfBytes: Promise<Uint8Array> | undefined;
-const getBlankPdf = () => (pdfBytes ??= loadFormPdf(form));
-const fill = createFormFiller(form, getBlankPdf);
+const fill = createFormFiller(form);
 
 mountYamlPanel(mount('yaml-panel'), state, { exampleYaml, lang, clearDraft: () => draft.clear() });
 
@@ -107,5 +105,5 @@ actions.setPdfActionsEnabled(state.get().result.ok);
 state.subscribe(({ result }) => actions.setPdfActionsEnabled(result.ok));
 
 // Preload so the first click is instant and load errors show up early.
-getBlankPdf().catch((error) => notices.show(t.actions.loadFailed(String(error)), 'error'));
+fill.blankPdf().catch((error) => notices.show(t.actions.loadFailed(String(error)), 'error'));
 

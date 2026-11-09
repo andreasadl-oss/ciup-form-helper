@@ -3,16 +3,16 @@
 import { readFileSync } from 'node:fs';
 import { create as createFont } from '@pdf-lib/fontkit';
 import { PDFDocument } from 'pdf-lib';
-import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
-import { parseLayout, renderForm, type FillData } from '.';
+import { exampleData } from '../example-data.test-helper';
+import { parseLayout, renderForm } from '.';
 import { notoSansFromDisk } from './noto-sans.test-helper';
 import { drawnGlyphs, glyphRecordLength, textRuns } from './pdf-inspect.test-helper';
 
 const dir = 'forms/ciup-demande-manifestation-2026';
 const formPdf = new Uint8Array(readFileSync(`${dir}/form.pdf`));
 const layout = parseLayout(readFileSync(`${dir}/layout.yaml`, 'utf8'));
-const example = parse(readFileSync('reference/example-data.yaml', 'utf8')) as FillData;
+const example = exampleData();
 
 describe('rendering the example request', () => {
   it('fills both form pages and adds the programme page, without problems', async () => {

@@ -14,7 +14,6 @@ export {
 export {
   helvetica,
   notoSansFrom,
-  createMeasure,
   createFontMetrics,
   type Face,
   type EmbeddedFonts,

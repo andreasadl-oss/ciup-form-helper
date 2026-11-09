@@ -5,6 +5,7 @@
  * form is just adding a new folder with `form.pdf` + `layout.yaml`
  * (and later `meta.yaml`). Parsing the YAML is left to the modules that need it.
  */
+import { fetchBytes } from '../fetch-bytes';
 
 export interface FormFiles {
   /** Folder name, e.g. `ciup-demande-manifestation-2026`. */
@@ -68,8 +69,6 @@ export function getForm(id: string): FormFiles {
 }
 
 /** Fetch the original PDF bytes of a form, unchanged. */
-export async function loadFormPdf(form: FormFiles): Promise<Uint8Array> {
-  const response = await fetch(form.pdfUrl);
-  if (!response.ok) throw new Error(`Could not load ${form.pdfUrl}: HTTP ${response.status}`);
-  return new Uint8Array(await response.arrayBuffer());
+export function loadFormPdf(form: FormFiles): Promise<Uint8Array> {
+  return fetchBytes(form.pdfUrl);
 }

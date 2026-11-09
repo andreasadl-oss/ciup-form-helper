@@ -166,14 +166,6 @@ function coverage(pdfFont: PDFFont): (text: string) => string[] {
 /** Width in points of `text` at `size` pt in the family's regular (or bold) face. */
 export type MeasureText = (text: string, size: number, options?: { bold?: boolean }) => number;
 
-/**
- * A text-width function for a font family, usable without rendering
- * (e.g. for "doesn't fit" validation). Gives the same widths the renderer uses.
- */
-export async function createMeasure(family: FontFamily = helvetica): Promise<MeasureText> {
-  return (await createFontMetrics(family)).measure;
-}
-
 export interface FontMetrics {
   measure: MeasureText;
   /** Characters of `text` that can't be drawn in the regular or bold face, each once, in order. Empty when all can. */

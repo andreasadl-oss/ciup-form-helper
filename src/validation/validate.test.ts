@@ -1,15 +1,14 @@
 import { readFileSync } from 'node:fs';
-import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
+import { exampleData } from '../example-data.test-helper';
 import { getFormDefinition } from '../forms/definition';
 import { getForm } from '../forms/registry';
-import { createFontMetrics, parseLayout, renderForm } from '../render';
+import { createFontMetrics, parseLayout, renderForm, type Problem } from '../render';
 import { notoSansFromDisk } from '../render/noto-sans.test-helper';
-import type { Problem } from '../render';
 import { uncoveredProblems, validate, type Warning } from './validate';
 
 const def = getFormDefinition('ciup-demande-manifestation-2026');
-const example = parse(readFileSync('reference/example-data.yaml', 'utf8')) as Record<string, unknown>;
+const example = exampleData();
 /** The example event is on 12/12/2026: 41 days after this. */
 const TODAY = new Date(2026, 10, 1);
 

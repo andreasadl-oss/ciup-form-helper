@@ -1,11 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { PDFDocument } from 'pdf-lib';
-import { createFontMetrics, createMeasure, helvetica } from './font';
+import { createFontMetrics, helvetica, type FontFamily } from './font';
+
+const createMeasure = async (family?: FontFamily) => (await createFontMetrics(family)).measure;
 import { notoSansFromDisk } from './noto-sans.test-helper';
 import { drawnType0Widths } from './pdf-inspect.test-helper';
 
-describe('createMeasure (Helvetica)', () => {
+describe('createFontMetrics: measure (Helvetica)', () => {
   it('measures regular text with the Helvetica AFM widths', async () => {
     const measure = await createMeasure(helvetica);
     // H 722 + e 556 + l 222 + l 222 + o 556 = 2278 / 1000 em
@@ -68,10 +70,5 @@ describe('createFontMetrics: glyph coverage', () => {
   it('ignores line breaks and tabs', async () => {
     const { canDraw } = await createFontMetrics(notoSansFromDisk);
     expect(canDraw('a\nb\tc\r\n')).toEqual([]);
-  });
-
-  it('measures like createMeasure', async () => {
-    const { measure } = await createFontMetrics(helvetica);
-    expect(measure('Hello', 10)).toBeCloseTo(22.78, 5);
   });
 });

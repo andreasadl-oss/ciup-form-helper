@@ -4,7 +4,7 @@
  * with exactly the logic the renderer uses.
  */
 
-/** Width in points of `text` at `size` pt. See `createMeasure` in ./font. */
+/** Width in points of `text` at `size` pt. See `createFontMetrics` in ./font. */
 export type WidthAtSize = (text: string, size: number) => number;
 
 /** Smallest size `lines` fields shrink to (pt). */
