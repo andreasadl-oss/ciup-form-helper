@@ -31,6 +31,14 @@ button {
 .notice-error {
   background: #fde2e2;
 }
+.notice-summary {
+  margin: 0.5em 0;
+  padding-left: 2em;
+}
+.notice-summary .notice-prominent {
+  font-weight: bold;
+  color: #8a1c1c;
+}
 
 .prompt-box {
   box-sizing: border-box;

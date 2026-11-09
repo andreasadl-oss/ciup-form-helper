@@ -11,8 +11,11 @@ import { mountFormPanel } from './panels/form';
 import { mountNotices } from './panels/notices';
 import { mountPreviewPanel } from './panels/preview';
 import { mountPromptPanel } from './panels/prompt';
+import { connectValidation } from './panels/validation';
 import { mountYamlPanel } from './panels/yaml';
+import { createFontMetrics, parseLayout } from './render';
 import { createFormFiller } from './render/fill-form';
+import { notoSans } from './render/noto-sans';
 import { renderPdfToCanvases } from './render/pdf-canvas';
 import { createAppState } from './state';
 
@@ -42,9 +45,9 @@ const actions = mountActionsPanel(mount('actions-panel'), {
   getPdf: async () => {
     const { result } = state.get();
     if (!result.ok) throw new Error('fix the YAML error first');
-    const { pdf, problems } = await fill(result.data);
+    // The renderer's problems (too wide, too long, can't draw) are already shown by validation.
+    const { pdf } = await fill(result.data);
     notices.clear();
-    for (const p of problems) notices.show(`${p.field}: ${p.message}`, 'warning');
     return pdf;
   },
   onError: (error) => notices.show(`Could not create the PDF: ${String(error)}`, 'error'),
@@ -64,6 +67,14 @@ getBlankPdf().catch((error) => notices.show(`Could not load the form PDF: ${Stri
 
 mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(getFormDefinition(FORM_ID)) });
 
-mountFormPanel(mount('form-panel'), state, getFormDefinition(FORM_ID));
+const formPanel = mountFormPanel(mount('form-panel'), state, getFormDefinition(FORM_ID));
+
+connectValidation(state, {
+  def: getFormDefinition(FORM_ID),
+  layout: parseLayout(form.layoutYaml),
+  metrics: createFontMetrics(notoSans),
+  formPanel,
+  notices,
+});
 
 mountPreviewPanel(mount('preview-panel'), state, { fill, renderPdf: renderPdfToCanvases });

@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [05, 07, 10]
 ---
 # 08 Validation warnings

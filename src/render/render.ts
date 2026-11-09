@@ -6,7 +6,7 @@ import { PDFDocument, rgb, type PDFPage } from 'pdf-lib';
 import { drawAppendix, type Appendix } from './appendix';
 import { fitLines } from './fit';
 import { helvetica, type EmbeddedFonts, type Face, type FontFamily } from './font';
-import { dataKeysOf, type Layout, type LayoutField } from './layout';
+import { dataKeysOf, type Layout, type LayoutField, type LinesField, type TextField } from './layout';
 
 /** Ink colour #1a2a6c: dark blue, reads as "filled in by hand". */
 export const INK = rgb(0x1a / 255, 0x2a / 255, 0x6c / 255);
@@ -71,11 +71,9 @@ function drawField(
     return;
   }
 
-  const keys = dataKeysOf(name, field);
-  if (!keys.some((key) => !isEmpty(data[key]))) return;
-  const template = field.template ?? `{${name}}`;
+  const filled = fieldText(name, field, data);
+  if (filled === undefined) return;
   const font = faces.regular;
-  const filled = template.replace(/\{(\w+)\}/g, (_, key: string) => (isEmpty(data[key]) ? '' : String(data[key]))).trim();
   const text = drawable([filled], [font], name, problems)[0];
 
   let lines: string[];
@@ -97,6 +95,19 @@ function drawField(
   }
 
   lines.forEach((line, i) => drawLine(page, line, field.x, field.y - i * leading, field.w, size, font));
+}
+
+/**
+ * The text a `text` / `lines` field draws (its template filled in, NFC), or
+ * undefined when the field is skipped because all its data keys are empty.
+ */
+export function fieldText(name: string, field: TextField | LinesField, data: FillData): string | undefined {
+  if (!dataKeysOf(name, field).some((key) => !isEmpty(data[key]))) return undefined;
+  const template = field.template ?? `{${name}}`;
+  return template
+    .replace(/\{(\w+)\}/g, (_, key: string) => (isEmpty(data[key]) ? '' : String(data[key])))
+    .trim()
+    .normalize('NFC');
 }
 
 /** White out the dotted leader, then draw the text on its baseline. */
