@@ -9,9 +9,11 @@ import { getForm, loadFormPdf } from './forms/registry';
 import { mountActionsPanel } from './panels/actions';
 import { mountFormPanel } from './panels/form';
 import { mountNotices } from './panels/notices';
+import { mountPreviewPanel } from './panels/preview';
 import { mountPromptPanel } from './panels/prompt';
 import { mountYamlPanel } from './panels/yaml';
 import { createFormFiller } from './render/fill-form';
+import { renderPdfToCanvases } from './render/pdf-canvas';
 import { createAppState } from './state';
 
 const FORM_ID = 'ciup-demande-manifestation-2026';
@@ -63,3 +65,5 @@ getBlankPdf().catch((error) => notices.show(`Could not load the form PDF: ${Stri
 mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(getFormDefinition(FORM_ID)) });
 
 mountFormPanel(mount('form-panel'), state, getFormDefinition(FORM_ID));
+
+mountPreviewPanel(mount('preview-panel'), state, { fill, renderPdf: renderPdfToCanvases });

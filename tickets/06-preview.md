@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [04]
 ---
 # 06 Live preview
