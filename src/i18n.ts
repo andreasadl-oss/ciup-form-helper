@@ -34,7 +34,9 @@ const en = {
   },
   yaml: {
     label: 'Paste the YAML here',
+    hint: 'The form and the preview update as you paste or type. There is nothing to press.',
     loadExample: 'Load example',
+    replaceConfirm: 'Replace your YAML with the example? What you pasted or typed will be lost.',
     clearDraft: 'Clear draft',
     clearConfirm: 'Clear the YAML and the form? This cannot be undone.',
     position: (line: number, column?: number) => `Line ${line}${column === undefined ? '' : `, column ${column}`}`,
@@ -98,7 +100,9 @@ const fr: UiStrings = {
   },
   yaml: {
     label: 'Collez le YAML ici',
+    hint: "Le formulaire et l'aperçu se mettent à jour dès que vous collez ou tapez. Aucun bouton à presser.",
     loadExample: "Charger l'exemple",
+    replaceConfirm: "Remplacer votre YAML par l'exemple ? Ce que vous avez collé ou tapé sera perdu.",
     clearDraft: 'Effacer le brouillon',
     clearConfirm: 'Effacer le YAML et le formulaire ? Cette action est définitive.',
     position: (line, column) => `Ligne ${line}${column === undefined ? '' : `, colonne ${column}`}`,

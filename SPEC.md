@@ -46,7 +46,7 @@ To hold an event at the Cité (a concert, film screening, party…), residents m
 - **PDF filling:** `pdf-lib` in the browser. Load `form.pdf`, draw onto each page, and append the programme page. This is a port of `reference/fill.py`. Match its behaviour and its rendered output (`reference/example-output.*`).
 - **YAML:** `js-yaml` (or `yaml`).
 - **UI generated from `layout.yaml` + `meta.yaml`:** each `text` / `lines` field becomes an input or textarea, and each `check` field becomes a checkbox (grouped by section, with radio-like groups where the form implies one choice, e.g. `concert_ouvert_oui` / `concert_ouvert_non`).
-- **Prompt generated from the same files.** Build the LLM prompt from `layout.yaml` + `meta.yaml` rather than hand-maintaining it, so the field list can never drift. `reference/prompt.md` is the hand-written version to reproduce.
+- **Prompt generated from the same files.** Build the LLM prompt from `layout.yaml` + `meta.yaml` rather than hand-maintaining it, so the field list can never drift. The prompt follows the interface language and has the chatbot interview the user until every key that applies has a value; `reference/prompt.md` and `reference/prompt.fr.md` hold the generated output.
 - **Framework:** your choice. A dependency-light setup (plain TS + Vite, or Preact) is fine. Vite builds to a static `dist/` and deploys to Pages with a GitHub Action.
 
 ## Data contract
@@ -109,7 +109,7 @@ Ink colour is `#1a2a6c` and the font is Helvetica.
 |---|---|
 | `form.pdf` | the blank official form (2 pages, A4, 595.5 × 842.25 pt) |
 | `layout.yaml` | calibrated field positions (checked visually: no leftover dotted leaders) |
-| `prompt.md` | the hand-written LLM prompt (not yet tested against real chatbots: do that early) |
+| `prompt.md`, `prompt.fr.md` | the generated LLM prompt in EN and FR, kept as test snapshots (not yet tested against real chatbots: do that early) |
 | `fill.py` + `requirements.txt` | the working Python reference implementation (`python fill.py layout.yaml example-data.yaml --preview`) |
 | `example-data.yaml` | fictional filled-in data |
 | `example-output.pdf`, `.p1.png`, `.p2.png` | what the output should look like |

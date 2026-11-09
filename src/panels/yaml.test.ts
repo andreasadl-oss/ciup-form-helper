@@ -52,11 +52,38 @@ describe('yaml panel', () => {
   });
 
   it('"Load example" puts the example YAML in the textarea and the state', () => {
-    const { root, state, textarea } = setup('nom: a\n');
+    const { root, state, textarea } = setup();
     const button = [...root.querySelectorAll('button')].find((b) => /example/i.test(b.textContent ?? ''))!;
     button.click();
     expect(textarea.value).toBe('nom: "Exemple"\n');
     expect(state.get().result).toEqual({ ok: true, data: { nom: 'Exemple' } });
+  });
+
+  it('"Load example" asks before replacing YAML the user already has', () => {
+    const root = document.createElement('section');
+    const state = createAppState('nom: "Mon concert"\n');
+    const questions: string[] = [];
+    const answers = [false, true];
+    mountYamlPanel(root, state, {
+      exampleYaml: 'nom: "Exemple"\n',
+      confirm: (q) => (questions.push(q), answers.shift()!),
+    });
+    const button = [...root.querySelectorAll('button')].find((b) => /example/i.test(b.textContent ?? ''))!;
+    button.click();
+    expect(state.get().yaml).toBe('nom: "Mon concert"\n');
+    button.click();
+    expect(state.get().yaml).toBe('nom: "Exemple"\n');
+    expect(questions).toEqual([expect.stringMatching(/^Replace your YAML with the example\?/), expect.anything()]);
+    // Already showing the example: nothing to lose, no question.
+    button.click();
+    expect(questions).toHaveLength(2);
+  });
+
+  it('says that pasting is enough, with no button to press', () => {
+    const { root, textarea } = setup();
+    const hint = root.querySelector('#yaml-hint')!;
+    expect(hint.textContent).toMatch(/update as you paste/);
+    expect(textarea.getAttribute('aria-describedby')).toContain('yaml-hint');
   });
   it('shows French texts when lang is fr, including the error position', () => {
     const root = document.createElement('section');

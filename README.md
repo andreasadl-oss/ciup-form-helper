@@ -81,7 +81,7 @@ For checkboxes, use the position of the box glyph (`☐`). For `w`, measure to t
 
 - `recipient`, `deadline_days`: where the email goes and how many days ahead the request must be sent (the "too late" warning).
 - `email.subject`, `email.body`: templates with `{data_key}` placeholders. A `[bracketed part]` is dropped when one of its placeholders is empty.
-- `prompt.intro`, `prompt.rules`, `prompt.outro`, `ciup_rules`: the text of the generated chatbot prompt. The field list is generated from `fields`.
+- `prompt.en` / `prompt.fr` (`intro`, `steps`, `rules`, `outro`) and `ciup_rules` (`en`, `fr`): the text of the generated chatbot prompt, in the interface language. The field list is generated from `fields`. The full prompts are kept in `reference/prompt.md` and `reference/prompt.fr.md` (file snapshots): after changing the texts, run `npx vitest run -u` and read the diff.
 - `sections`: `id` and `title: {en, fr}`, in form order.
 - `fields.<key>`: one entry per layout field, and one per key used in a `template`, with `section`, `label: {en, fr}`, optional `help: {en, fr}`, optional `max_length`, and `format: date | time` for template keys.
 - `groups.<id>`: sets of checkboxes where only one should be ticked (e.g. Oui / Non).

@@ -156,6 +156,10 @@ input[type='checkbox'] {
   display: block;
   font-weight: 600;
 }
+#yaml-panel .hint {
+  margin: 0.25em 0 0.5em;
+  color: #555;
+}
 #yaml-panel textarea {
   display: block;
   box-sizing: border-box;

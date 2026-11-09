@@ -29,26 +29,80 @@ email:
     Cordialement,
   truncate_first: [nom]
 
+# The chatbot prompt, one version per interface language. The chatbot interviews the
+# user until every key that applies has a value, then writes the YAML.
+# `steps` and `rules` become numbered and bulleted lists. The "Text must fit" rule is
+# generated from `max_length`, and the CIUP rule from `ciup_rules`, so they cannot drift
+# from the fields. `outro` is the placeholder the user replaces with their description.
 prompt:
-  intro: >-
-    You help residents of the Cité internationale universitaire de Paris (CIUP) fill in the
-    "Demande de manifestation 2026" form. Turn my event description into YAML using ONLY the keys below.
-  # General rules. The "Text must fit" rule is generated from `max_length`, and the
-  # CIUP rules from `ciup_rules`, so they cannot drift from the fields.
-  rules:
-    - "Output only one ```yaml code block, nothing else."
-    - "Write the values in French."
-    - "Checkboxes: write `true` for ticked ones and leave the others out entirely."
-    - "If a piece of information is not in my description, write `\"TODO <what is missing>\"`. Never invent names, dates, rooms or universities."
-    - "Leave out keys that don't apply (e.g. exhibition fields for a concert)."
-    - "Dates as `jj/mm/aaaa`, times as `19 h 30`."
-  outro: >-
-    <Describe it in a few sentences, in any language: what, who performs, which house and room,
-    date and time, expected audience, free or not, songs/programme if a concert, your university.>
+  en:
+    intro: >-
+      You help me fill in the "Demande de manifestation 2026" form of the Cité internationale
+      universitaire de Paris (CIUP). You interview me about my event, then write the form's data
+      as YAML with the keys below.
+    steps:
+      - "Read my event description at the end of this message and match each detail to a key."
+      - >-
+        Interview me: ask about every key that applies to my event and that my description leaves
+        open, and about anything that breaks a CIUP rule. Ask at most 5 numbered questions per
+        message, in the language I write in. When you can guess an answer, offer it so I only have
+        to confirm (e.g. "Same day as the start?").
+      - >-
+        Repeat step 2 until every key that applies has a value I gave or confirmed. When I don't
+        know something yet, its value is `"TODO <what is missing>"`.
+      - >-
+        Answer with the YAML: one ```yaml code block and nothing else. When I ask for the YAML
+        earlier, write it right away, with TODO values for the open points.
+    rules:
+      - >-
+        Every value comes from what I wrote or confirmed. Draft the longer texts, such as
+        `interet`, from my answers and show me the draft so I can confirm it.
+      - "Write the values in French."
+      - "Checkboxes: write `true` for the ticked ones; leave unticked ones out."
+      - "Keys that don't apply to my event stay out (e.g. exhibition fields for a concert)."
+      - "Dates as `jj/mm/aaaa`, times as `19 h 30`."
+    outro: >-
+      <Describe your event in a few sentences, in any language: what, who performs, which house and
+      room, date and time, expected audience, free or not, songs/programme if a concert, your university.>
+  fr:
+    intro: >-
+      Tu m'aides à remplir le formulaire « Demande de manifestation 2026 » de la Cité internationale
+      universitaire de Paris (CIUP). Tu m'interroges sur mon événement, puis tu écris les données du
+      formulaire en YAML avec les clés ci-dessous.
+    steps:
+      - "Lis la description de mon événement à la fin de ce message et associe chaque information à une clé."
+      - >-
+        Interroge-moi : pose des questions sur chaque clé qui concerne mon événement et que ma
+        description laisse ouverte, et sur tout ce qui enfreint une règle de la CIUP. Pose au plus
+        5 questions numérotées par message, dans la langue dans laquelle je t'écris. Quand tu peux
+        deviner une réponse, propose-la pour que je n'aie qu'à confirmer (par ex. « Le même jour que
+        le début ? »).
+      - >-
+        Recommence l'étape 2 jusqu'à ce que chaque clé qui concerne mon événement ait une valeur que
+        j'ai donnée ou confirmée. Quand je ne sais pas encore, la valeur est `"TODO <ce qui manque>"`.
+      - >-
+        Réponds avec le YAML : un seul bloc de code ```yaml et rien d'autre. Quand je demande le YAML
+        plus tôt, écris-le tout de suite, avec des valeurs TODO pour les points ouverts.
+    rules:
+      - >-
+        Chaque valeur vient de ce que j'ai écrit ou confirmé. Rédige les textes plus longs, comme
+        `interet`, à partir de mes réponses et montre-moi le brouillon pour que je le confirme.
+      - "Écris les valeurs en français."
+      - "Cases à cocher : écris `true` pour les cases cochées ; laisse les autres de côté."
+      - "Les clés qui ne concernent pas mon événement restent absentes (par ex. les champs d'exposition pour un concert)."
+      - "Dates au format `jj/mm/aaaa`, heures au format `19 h 30`."
+    outro: >-
+      <Décrivez votre événement en quelques phrases, dans la langue de votre choix : quoi, qui se
+      produit, quelle maison et quelle salle, date et heure, public attendu, gratuit ou non,
+      morceaux/programme pour un concert, votre université.>
 
-ciup_rules: >-
-  Events at the Cité are free; no ticket or alcohol sales. Paid artists or partnerships require
-  a convention (section 5); otherwise leave section 5 out.
+ciup_rules:
+  en: >-
+    Events at the Cité are free; no ticket or alcohol sales. Paid artists or partnerships require a
+    convention (section 5); otherwise section 5 stays out.
+  fr: >-
+    Les manifestations à la Cité sont gratuites ; pas de vente de billets ni d'alcool. Un artiste
+    rémunéré ou un partenariat exige une convention (section 5) ; sinon, la section 5 reste absente.
 
 # Contradiction checks (validation warnings). Field names must be check fields.
 validation:
@@ -79,14 +133,15 @@ appendix:
   help:
     en: "Concerts only: programme for the Sacem declaration (extra page)."
     fr: "Concerts uniquement : programme pour la déclaration Sacem (page supplémentaire)."
-  # Shown in the prompt as the shape of the `appendix` key.
+  # Shown in the prompt as the shape of the `appendix` key. Placeholders are in French,
+  # like the values, so both prompt languages share them.
   example:
     title: "Programme : <nom de l'événement>"
-    intro: "<performers, duration>"
+    intro: "<interprètes, durée>"
     columns: ["#", "Titre", "Compositeur(s) / auteur(s)"]
     col_widths: [25, 170, 300]
     rows:
-      - ["1", "<title>", "<composer / lyricist>"]
+      - ["1", "<titre>", "<compositeur / parolier>"]
 
 groups:
   conference_ouvert: {fields: [conference_ouvert_oui, conference_ouvert_non]}

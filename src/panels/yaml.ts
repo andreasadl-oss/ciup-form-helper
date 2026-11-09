@@ -11,7 +11,7 @@ export interface YamlPanelOptions {
   lang?: Lang;
   /** Adds a "Clear draft" button: after confirmation it empties the YAML and calls this (e.g. to forget the saved draft). */
   clearDraft?: () => void;
-  /** Asks the user to confirm clearing. Default: `window.confirm`. */
+  /** Asks the user to confirm clearing, or replacing their YAML with the example. Default: `window.confirm`. */
   confirm?: (question: string) => boolean;
 }
 
@@ -24,10 +24,17 @@ export function mountYamlPanel(root: HTMLElement, state: AppState, options: Yaml
 
   const buttons = document.createElement('div');
   buttons.className = 'button-row';
-  buttons.append(button(t.loadExample, () => state.setYaml(options.exampleYaml, 'load-example')));
+  const confirm = options.confirm ?? ((q: string) => window.confirm(q));
+  buttons.append(
+    button(t.loadExample, () => {
+      // The example replaces the user's YAML (and with it the saved draft): ask first when there is any.
+      const current = state.get().yaml;
+      if (current.trim() !== '' && current !== options.exampleYaml && !confirm(t.replaceConfirm)) return;
+      state.setYaml(options.exampleYaml, 'load-example');
+    }),
+  );
   const { clearDraft } = options;
   if (clearDraft) {
-    const confirm = options.confirm ?? ((q: string) => window.confirm(q));
     buttons.append(
       button(t.clearDraft, () => {
         if (!confirm(t.clearConfirm)) return;
@@ -47,9 +54,14 @@ export function mountYamlPanel(root: HTMLElement, state: AppState, options: Yaml
   error.className = 'yaml-error';
   error.id = 'yaml-error';
   error.setAttribute('role', 'alert');
-  textarea.setAttribute('aria-describedby', error.id);
+  // Nothing to press after pasting: say so, next to the box.
+  const hint = document.createElement('p');
+  hint.className = 'hint';
+  hint.id = 'yaml-hint';
+  hint.textContent = t.hint;
+  textarea.setAttribute('aria-describedby', `${hint.id} ${error.id}`);
 
-  root.append(label, buttons, textarea, error);
+  root.append(label, hint, buttons, textarea, error);
 
   const show = ({ yaml, result }: AppSnapshot, origin?: string) => {
     // Don't rewrite the user's own typing: it would move the cursor.

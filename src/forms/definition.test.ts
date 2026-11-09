@@ -19,8 +19,8 @@ function fixtureMeta(changes: (meta: any) => void = () => {}): string {
     recipient: 'x@example.org',
     deadline_days: 21,
     email: { subject: '{nom}', body: 'Bonjour {nom} {date_debut}' },
-    prompt: { intro: 'i', rules: ['r'], outro: 'o' },
-    ciup_rules: 'c',
+    prompt: { en: { intro: 'i', steps: ['s'], rules: ['r'], outro: 'o' }, fr: { intro: 'i', steps: ['s'], rules: ['r'], outro: 'o' } },
+    ciup_rules: label('c'),
     sections: [{ id: 's', title: label('S') }],
     appendix: { section: 's', label: label('A'), example: { title: 't', columns: ['#'], rows: [['1']] } },
     groups: { g: { fields: ['oui', 'non'] } },
@@ -175,10 +175,13 @@ describe('getFormDefinition (CIUP form)', () => {
   });
 
   it('carries the prompt texts, CIUP rules and the appendix description', () => {
-    expect(def.prompt.intro).toMatch(/^You help residents of the Cité internationale universitaire de Paris/);
-    expect(def.prompt.rules).toContain('Write the values in French.');
-    expect(def.prompt.outro).toMatch(/^<Describe it in a few sentences/);
-    expect(def.ciupRules).toMatch(/^Events at the Cité are free; no ticket or alcohol sales\./);
+    expect(def.prompt.en.intro).toMatch(/^You help me fill in the "Demande de manifestation 2026" form/);
+    expect(def.prompt.fr.intro).toMatch(/^Tu m'aides à remplir le formulaire/);
+    expect(def.prompt.en.steps).toHaveLength(4);
+    expect(def.prompt.fr.rules).toContain('Écris les valeurs en français.');
+    expect(def.prompt.en.outro).toMatch(/^<Describe your event in a few sentences/);
+    expect(def.ciupRules.en).toMatch(/^Events at the Cité are free; no ticket or alcohol sales\./);
+    expect(def.ciupRules.fr).toMatch(/^Les manifestations à la Cité sont gratuites/);
     expect(def.appendix).toMatchObject({ key: 'appendix', section: 'appendix', label: { fr: 'Page programme' } });
     expect(def.appendix.example.columns).toEqual(['#', 'Titre', 'Compositeur(s) / auteur(s)']);
   });

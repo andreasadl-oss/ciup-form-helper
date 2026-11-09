@@ -55,7 +55,7 @@ const fill = createFormFiller(form);
 
 mountYamlPanel(mount('yaml-panel'), state, { exampleYaml, lang, clearDraft: () => draft.clear() });
 
-mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(def), lang });
+mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(def, lang), lang });
 
 const formPanel = mountFormPanel(mount('form-panel'), state, def, { lang });
 

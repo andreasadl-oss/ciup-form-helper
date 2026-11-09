@@ -86,13 +86,18 @@ export interface EmailDef {
   truncateFirst: string[];
 }
 
-export interface PromptDef {
+/** The chatbot prompt texts in one language. */
+export interface PromptTexts {
   intro: string;
-  /** General rules. Max-length and CIUP rules are not included: build them from `maxLength` and `ciupRules`. */
+  /** The interview, in order (a numbered list in the prompt). */
+  steps: string[];
+  /** YAML rules. Max-length and CIUP rules are not included: build them from `maxLength` and `ciupRules`. */
   rules: string[];
   /** Placeholder the user replaces with their event description. */
   outro: string;
 }
+
+export type PromptDef = Record<keyof Bilingual, PromptTexts>;
 
 /**
  * Form-specific contradiction checks for validation (meta.yaml `validation`).
@@ -115,7 +120,7 @@ export interface FormDefinition {
   /** Minimum number of days between sending the request and the event. */
   deadlineDays: number;
   prompt: PromptDef;
-  ciupRules: string;
+  ciupRules: Bilingual;
   appendix: AppendixDef;
   /** Sections in display order (form sections, then the appendix). */
   sections: SectionDef[];
@@ -160,7 +165,7 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
     deadline_days: number;
     email: { subject: string; body: string; truncate_first?: string[] };
     prompt: PromptDef;
-    ciup_rules: string;
+    ciup_rules: Bilingual;
     appendix: Omit<AppendixDef, 'key'>;
     validation?: Record<string, string>;
   };
@@ -223,7 +228,7 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
     id,
     email: { to: meta.recipient, subject: meta.email.subject, body: meta.email.body, truncateFirst },
     deadlineDays: meta.deadline_days,
-    prompt: { intro: meta.prompt.intro, rules: meta.prompt.rules, outro: meta.prompt.outro },
+    prompt: meta.prompt,
     ciupRules: meta.ciup_rules,
     appendix: { key: APPENDIX_KEY, ...meta.appendix },
     sections,
