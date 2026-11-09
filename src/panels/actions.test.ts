@@ -43,6 +43,27 @@ describe('actions panel', () => {
     expect(root.querySelector('button')!.textContent).toBe('Download example');
   });
 
+  it('asks for the file name at click time', async () => {
+    const saved = captureDownloads();
+    const root = document.createElement('div');
+    let name = 'first.pdf';
+    mountActionsPanel(root, { getPdf: async () => new Uint8Array([1]), fileName: () => name });
+    name = 'second.pdf';
+    root.querySelector('button')!.click();
+    await vi.waitFor(() => expect(saved).toHaveLength(1));
+    expect(saved[0].name).toBe('second.pdf');
+  });
+
+  it('can disable the download button', () => {
+    const root = document.createElement('div');
+    const panel = mountActionsPanel(root, { getPdf: async () => new Uint8Array(), fileName: 'f.pdf' });
+    const button = root.querySelector('button')!;
+    panel.setDownloadEnabled(false);
+    expect(button.disabled).toBe(true);
+    panel.setDownloadEnabled(true);
+    expect(button.disabled).toBe(false);
+  });
+
   it('reports getPdf failures instead of downloading', async () => {
     const saved = captureDownloads();
     const root = document.createElement('div');

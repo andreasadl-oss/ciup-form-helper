@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [02]
 ---
 # 04 Paste YAML → PDF
