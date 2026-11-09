@@ -31,3 +31,10 @@ button {
 .notice-error {
   background: #fde2e2;
 }
+
+.prompt-box {
+  box-sizing: border-box;
+  width: 100%;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+}

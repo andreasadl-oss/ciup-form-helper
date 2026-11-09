@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [03]
 ---
 # 07 Prompt panel (generated)
