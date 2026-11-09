@@ -17,10 +17,9 @@ import { dataToYaml } from '../forms/serialise';
 import { ui, type Lang } from '../i18n';
 import type { AppSnapshot, AppState } from '../state';
 import { isRecord } from '../values';
+import { button, el } from './dom';
 
 const ORIGIN = 'form-panel';
-
-export type { Lang };
 
 export interface FormPanelOptions {
   /** Interface and label language. Default: 'en'. */
@@ -36,20 +35,6 @@ export interface FormPanel {
 
 type Data = Record<string, unknown>;
 type AppendixData = Data & { title?: unknown; columns?: unknown; col_widths?: unknown; rows?: unknown };
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
-function button(text: string, onClick: () => void): HTMLButtonElement {
-  const b = el('button', undefined, text);
-  b.type = 'button';
-  b.addEventListener('click', onClick);
-  return b;
-}
 
 const asText = (value: unknown): string => (value === undefined || value === null || value === false ? '' : String(value));
 

@@ -1,4 +1,5 @@
 import { downloadBytes } from '../download';
+import { button } from './dom';
 import { ui, type Lang } from '../i18n';
 
 export interface ActionsPanelOptions {
@@ -44,14 +45,6 @@ function canShareFiles(): boolean {
   }
 }
 
-function makeButton(text: string, onClick: () => void): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.textContent = text;
-  button.addEventListener('click', onClick);
-  return button;
-}
-
 /** Actions panel: download button, and optionally email and share. */
 export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOptions): ActionsPanel {
   const t = ui[options.lang ?? 'en'].actions;
@@ -64,7 +57,7 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
   const row = document.createElement('div');
   row.className = 'button-row';
 
-  const download = makeButton(t.download, async () => {
+  const download = button(t.download, async () => {
     try {
       downloadBytes(await options.getPdf(), fileName());
     } catch (error) {
@@ -79,7 +72,7 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
       const file = new File([pdf as BlobPart], fileName(), { type: PDF_TYPE });
       return navigator.share({ files: [file], title: file.name });
     };
-    const button = makeButton(t.share, async () => {
+    const shareButton = button(t.share, async () => {
       try {
         const ready = options.readyPdf?.();
         // No await before share when a PDF is ready: keeps the user's tap.
@@ -88,8 +81,8 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
         if (!(error instanceof DOMException && error.name === 'AbortError')) options.onError?.(error);
       }
     });
-    pdfButtons.push(button);
-    row.append(button);
+    pdfButtons.push(shareButton);
+    row.append(shareButton);
   }
   root.append(row);
 
@@ -97,11 +90,11 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
     const { getMailto, open = (url: string) => window.location.assign(url) } = options.email;
     const group = document.createElement('div');
     group.className = 'email-action';
-    const button = makeButton(t.email, () => open(getMailto()));
+    const emailButton = button(t.email, () => open(getMailto()));
     const reminder = document.createElement('span');
     reminder.className = 'email-reminder';
     reminder.textContent = t.emailReminder;
-    group.append(button, reminder);
+    group.append(emailButton, reminder);
     root.append(group);
   }
 

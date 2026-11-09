@@ -8,7 +8,8 @@ import type { FontMetrics, Layout } from '../render';
 import type { AppState } from '../state';
 import { formatWarning, messages as messageTables, type MessageTable } from '../validation/messages';
 import { validate, type Warning } from '../validation/validate';
-import type { FormPanel, Lang } from './form';
+import type { Lang } from '../i18n';
+import type { FormPanel } from './form';
 import type { Notices } from './notices';
 
 export interface ValidationOptions {

@@ -1,3 +1,4 @@
+import { button } from './dom';
 import { ui, type Lang, type UiStrings } from '../i18n';
 import type { AppSnapshot, AppState, YamlError } from '../state';
 
@@ -14,14 +15,6 @@ export interface YamlPanelOptions {
   confirm?: (question: string) => boolean;
 }
 
-function makeButton(text: string, onClick: () => void): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.textContent = text;
-  button.addEventListener('click', onClick);
-  return button;
-}
-
 /** YAML panel: textarea bound to the app state, with parse errors shown below it. */
 export function mountYamlPanel(root: HTMLElement, state: AppState, options: YamlPanelOptions): void {
   const t = ui[options.lang ?? 'en'].yaml;
@@ -31,12 +24,12 @@ export function mountYamlPanel(root: HTMLElement, state: AppState, options: Yaml
 
   const buttons = document.createElement('div');
   buttons.className = 'button-row';
-  buttons.append(makeButton(t.loadExample, () => state.setYaml(options.exampleYaml, 'load-example')));
+  buttons.append(button(t.loadExample, () => state.setYaml(options.exampleYaml, 'load-example')));
   const { clearDraft } = options;
   if (clearDraft) {
     const confirm = options.confirm ?? ((q: string) => window.confirm(q));
     buttons.append(
-      makeButton(t.clearDraft, () => {
+      button(t.clearDraft, () => {
         if (!confirm(t.clearConfirm)) return;
         state.setYaml('', 'clear-draft');
         clearDraft();
