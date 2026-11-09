@@ -95,10 +95,11 @@ describe('actions panel', () => {
     expect(reminder).toMatch(/PDF/);
   });
 
-  it('shows the address and a Cc hint in plain text, for when the mail app does not open', () => {
+  it('says where to send it and to Cc the house, without the address in the page text', () => {
     const root = document.createElement('div');
     mountActionsPanel(root, { getPdf: async () => new Uint8Array(), fileName: 'f.pdf', email: { getMailto: () => 'mailto:x', getText } });
-    expect(root.querySelector('.email-to')!.textContent).toBe('Send it to: evenements.internes@ciup.fr');
+    expect(root.querySelector('.email-to')!.textContent).toMatch(/address printed at the top of the form/);
+    expect(root.textContent).not.toContain('@');
     expect(root.querySelector('.email-cc')!.textContent).toMatch(/Cc your house/);
     expect(root.querySelector('.email-fallback')!.textContent).toMatch(/Brave/);
   });
@@ -251,7 +252,7 @@ describe('actions panel', () => {
     });
     expect(buttonByText(root, 'Télécharger le PDF')).toBeTruthy();
     expect(root.textContent).toContain("N'oubliez pas de joindre le PDF");
-    expect(root.textContent).toContain('À envoyer à : evenements.internes@ciup.fr');
+    expect(root.textContent).toContain("l'adresse des événements internes de la CIUP, indiquée en haut du formulaire");
   });
   it('reports getPdf failures instead of downloading', async () => {
     const saved = captureDownloads();

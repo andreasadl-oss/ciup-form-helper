@@ -216,11 +216,6 @@ input[type='checkbox'] {
 .email-fallback {
   margin: 0.4em 0;
 }
-.email-to strong {
-  /* Long address: wrap on phones instead of scrolling sideways. */
-  overflow-wrap: anywhere;
-  user-select: all;
-}
 .email-cc,
 .email-fallback {
   font-size: 0.9em;

@@ -66,7 +66,8 @@ const en = {
     download: 'Download PDF',
     email: 'Email',
     emailReminder: 'Opens your mail app. Remember to attach the downloaded PDF.',
-    sendTo: 'Send it to:',
+    sendTo:
+      'Send it to the CIUP internal events address printed at the top of the form. The "Copy address" button below copies it.',
     ccHouse: 'Ideally, Cc your house too (its public address is usually enough), so it knows about the event.',
     noMailApp: 'Email button does nothing? Some browsers (e.g. Brave) block it. Copy the parts and write the email yourself:',
     copyAddress: 'Copy address',
@@ -141,7 +142,8 @@ const fr: UiStrings = {
     download: 'Télécharger le PDF',
     email: 'E-mail',
     emailReminder: "Ouvre votre messagerie. N'oubliez pas de joindre le PDF téléchargé.",
-    sendTo: 'À envoyer à :',
+    sendTo:
+      "Envoyez-la à l'adresse des événements internes de la CIUP, indiquée en haut du formulaire. Le bouton « Copier l'adresse » ci-dessous la copie.",
     ccHouse:
       "Idéalement, mettez aussi votre maison en copie (son adresse publique suffit généralement), pour qu'elle soit au courant de l'événement.",
     noMailApp:

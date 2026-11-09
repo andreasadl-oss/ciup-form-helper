@@ -98,9 +98,8 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
     const group = el('div', 'email-action');
     group.append(button(t.email, () => open(getMailto())), el('span', 'email-reminder', t.emailReminder));
 
-    // The address in plain sight: it is printed on the official form, and the mail app may never open.
-    const sendTo = el('p', 'email-to', `${t.sendTo} `);
-    sendTo.append(el('strong', undefined, getText().to));
+    // Where to send it, without writing the address into the page text (the copy button and the form carry it).
+    const sendTo = el('p', 'email-to', t.sendTo);
     const cc = el('p', 'email-cc', t.ccHouse);
 
     // Brave and some setups block mailto:, so the user can write the email by hand.
