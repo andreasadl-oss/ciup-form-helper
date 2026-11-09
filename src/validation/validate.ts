@@ -15,7 +15,8 @@ export interface Warning {
   key: string;
   severity: Severity;
   message: MessageKey;
-  params: Record<string, string | number>;
+  /** Message parameters. A string[] of data keys (e.g. ields) is shown with the keys' labels. */
+  params: Record<string, string | number | string[]>;
 }
 
 export type MessageKey = 'unknownKey' | 'todo' | 'badDate' | 'datePast' | 'tooSoon'
@@ -81,7 +82,7 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
   const ticked = (key: string) => data[key] === true;
   for (const group of def.groups) {
     const on = group.fields.filter(ticked);
-    if (on.length > 1) add(on[0], 'groupConflict', { fields: on.join(', ') });
+    if (on.length > 1) add(on[0], 'groupConflict', { fields: on });
   }
   const has = (key: string) => valid.has(key);
   if (has(RULES.concert) && ticked(RULES.concert) && !appendixHasRows(data[def.appendix.key])) add(RULES.concert, 'concertNoAppendix');

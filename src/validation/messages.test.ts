@@ -26,7 +26,7 @@ describe('formatWarning', () => {
 
   it('has an English text for every message', () => {
     for (const [key, text] of Object.entries(messages.en)) {
-      expect(text({ key: 'x', suggestion: 'y', days: 1, deadlineDays: 21, value: 'v', fields: 'a, b', lines: 5, maxLines: 4, chars: '🎸' }), key).not.toBe('');
+      expect(text({ key: 'x', suggestion: 'y', days: 1, deadlineDays: 21, value: 'v', fields: ['a', 'b'], lines: 5, maxLines: 4, chars: '🎸' }, (k) => k), key).not.toBe('');
     }
   });
 

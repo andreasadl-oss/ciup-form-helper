@@ -96,7 +96,7 @@ describe('validate', () => {
   describe('contradictions', () => {
     it('warns when more than one box of a oui / non group is ticked', () => {
       expect(brief(run({ concert_ouvert_non: true }))).toEqual([
-        { key: 'concert_ouvert_oui', message: 'groupConflict', params: { fields: 'concert_ouvert_oui, concert_ouvert_non' } },
+        { key: 'concert_ouvert_oui', message: 'groupConflict', params: { fields: ['concert_ouvert_oui', 'concert_ouvert_non'] } },
       ]);
     });
 

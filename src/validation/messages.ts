@@ -4,7 +4,11 @@
  */
 import type { MessageKey, Warning } from './validate';
 
-export type MessageTable = Record<MessageKey, (params: Warning['params']) => string>;
+/** label turns a data key into its field label (for messages that name fields). */
+export type MessageTable = Record<MessageKey, (params: Warning['params'], label: (key: string) => string) => string>;
+
+const labels = (keys: Warning['params'][string], label: (key: string) => string) =>
+  (Array.isArray(keys) ? keys : [String(keys)]).map(label).join(', ');
 
 const en: MessageTable = {
   unknownKey: (p) => (p.suggestion === undefined ? `Unknown key "${p.key}".` : `Unknown key "${p.key}". Did you mean "${p.suggestion}"?`),
@@ -14,7 +18,7 @@ const en: MessageTable = {
   tooSoon: (p) =>
     `The event is in ${p.days} days. Send the request at least ${p.deadlineDays} days ahead: the CIUP may refuse late requests.`,
   endBeforeStart: () => 'The end date is before the start date.',
-  groupConflict: (p) => `Tick only one of: ${p.fields}.`,
+  groupConflict: (p, label) => `Tick only one of: ${labels(p.fields, label)}.`,
   concertNoAppendix: () => 'A concert needs a programme page (Sacem): add it at the end of the form.',
   paidEntry: () => 'Events at the Cité must be free: no ticket sales.',
   paidNoThirdParty: () => 'A paid artist needs a convention: fill in section 5 (third party).',
@@ -32,7 +36,7 @@ const fr = {
   tooSoon: (p) =>
     `L'événement a lieu dans ${p.days} jours. Envoyez la demande au moins ${p.deadlineDays} jours avant : la CIUP peut refuser les demandes tardives.`,
   endBeforeStart: () => 'La date de fin est avant la date de début.',
-  groupConflict: (p) => `Cochez une seule case parmi : ${p.fields}.`,
+  groupConflict: (p, label) => `Cochez une seule case parmi : ${labels(p.fields, label)}.`,
   concertNoAppendix: () => 'Un concert nécessite une page programme (Sacem) : ajoutez-la à la fin du formulaire.',
   paidEntry: () => "Les événements à la Cité doivent être gratuits : pas de vente d'entrées.",
   paidNoThirdParty: () => 'Un artiste rémunéré nécessite une convention : remplissez la section 5 (tiers).',
@@ -44,6 +48,7 @@ const fr = {
 
 export const messages = { en, fr };
 
-export function formatWarning(warning: Warning, table: MessageTable = en): string {
-  return table[warning.message](warning.params);
+/** label: data key → field label. Default: the key itself. */
+export function formatWarning(warning: Warning, table: MessageTable = en, label: (key: string) => string = (key) => key): string {
+  return table[warning.message](warning.params, label);
 }

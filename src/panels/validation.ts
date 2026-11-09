@@ -36,17 +36,19 @@ export function connectValidation(state: AppState, options: ValidationOptions): 
   const labels = new Map<string, Bilingual>(def.fields.flatMap((f) => f.dataKeys.map((k) => [k.key, k.label] as const)));
   labels.set(def.appendix.key, def.appendix.label);
 
+  const label = (key: string) => labels.get(key)?.[lang] ?? key;
+  const format = (w: Warning) => formatWarning(w, table, label);
+
   const update = () => {
     const { result } = state.get();
     const warnings: Warning[] = result.ok ? validate(result.data, def, today(), { layout, metrics }) : [];
     const byKey = new Map<string, string[]>();
-    for (const w of warnings) byKey.set(w.key, [...(byKey.get(w.key) ?? []), formatWarning(w, table)]);
+    for (const w of warnings) byKey.set(w.key, [...(byKey.get(w.key) ?? []), format(w)]);
     for (const key of def.validKeys) formPanel.setWarnings(key, byKey.get(key) ?? []);
     notices.setSummary(
       warnings.map((w) => {
-        const label = labels.get(w.key);
-        const text = formatWarning(w, table);
-        return { text: label ? `${label[lang]}: ${text}` : text, prominent: w.severity === 'high' };
+        const text = format(w);
+        return { text: labels.has(w.key) ? `${label(w.key)}: ${text}` : text, prominent: w.severity === 'high' };
       }),
     );
   };

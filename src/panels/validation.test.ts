@@ -67,6 +67,20 @@ describe('connectValidation', () => {
     expect(summary()).toHaveLength(1); // only the deadline warning remains
   });
 
+  it('names the conflicting boxes by their labels, in the interface language', () => {
+    const { fieldWarnings } = setup(`${exampleYaml}\nentree_payante: true\n`);
+    expect(fieldWarnings('entree_gratuite')).toEqual(['Tick only one of: Free, Paid.']);
+
+    const noticesRoot = document.createElement('div');
+    const formRoot = document.createElement('section');
+    document.body.append(noticesRoot, formRoot);
+    const state = createAppState(`${exampleYaml}\nentree_payante: true\n`);
+    const formPanel = mountFormPanel(formRoot, state, def, { lang: 'fr' });
+    connectValidation(state, { def, layout, metrics: new Promise(() => {}), formPanel, notices: mountNotices(noticesRoot), today, lang: 'fr' });
+    const warnings = [...formPanel.fieldElement('entree_gratuite')!.querySelectorAll('.field-warning li')].map((li) => li.textContent);
+    expect(warnings).toEqual(['Cochez une seule case parmi : Gratuite, Payante.']);
+  });
+
   it('lists unknown keys in the summary (they have no field)', () => {
     const { summary } = setup(`${exampleYaml}\nnon: "x"\n`);
     expect(summary()).toContain('Unknown key "non". Did you mean "nom"?');
