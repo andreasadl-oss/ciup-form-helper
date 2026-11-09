@@ -14,6 +14,7 @@ const en = {
     title: 'Event request form helper',
     unofficial:
       'Unofficial community helper made by residents. It is not a CIUP service, and the CIUP has not reviewed it.',
+    feedback: 'Report a problem or suggest an improvement (GitHub)',
     privacy:
       'Private: everything happens in your browser. Nothing you type is sent anywhere, and there are no analytics. Your last draft is kept only on this device.',
     language: 'Language',
@@ -90,6 +91,7 @@ const fr: UiStrings = {
     title: 'Aide au formulaire de demande de manifestation',
     unofficial:
       "Outil communautaire non officiel, fait par des résidents. Ce n'est pas un service de la CIUP, et la CIUP ne l'a pas vérifié.",
+    feedback: 'Signaler un problème ou proposer une amélioration (GitHub)',
     privacy:
       "Confidentiel : tout se passe dans votre navigateur. Rien de ce que vous saisissez n'est envoyé, et il n'y a aucune mesure d'audience. Votre dernier brouillon reste uniquement sur cet appareil.",
     language: 'Langue',

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Lang } from '../i18n';
-import { mountHeader } from './header';
+import { FEEDBACK_URL, mountHeader } from './header';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -23,6 +23,15 @@ describe('header', () => {
     expect(root.textContent).toMatch(/not a CIUP service/);
     expect(root.textContent).toMatch(/nothing you type is sent anywhere/i);
     expect(root.textContent).toMatch(/no analytics/i);
+  });
+
+  it('links to the GitHub issue templates in a new tab', () => {
+    const { root } = setup('en');
+    const link = root.querySelector<HTMLAnchorElement>('.notice-unofficial a')!;
+    expect(link.href).toBe(FEEDBACK_URL);
+    expect(link.target).toBe('_blank');
+    expect(link.textContent).toMatch(/report a problem/i);
+    expect(setup('fr').root.querySelector('.notice-unofficial a')!.textContent).toMatch(/Signaler un problème/);
   });
 
   it('is in French when lang is fr', () => {

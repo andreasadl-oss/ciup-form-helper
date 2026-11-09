@@ -1,0 +1,43 @@
+name: Problem / Problème
+description: Something doesn't work or the PDF looks wrong. / Quelque chose ne marche pas ou le PDF est faux.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Issues are public.** Don't paste names, phone numbers or email addresses.
+        **Les tickets sont publics.** Ne collez ni noms, ni numéros de téléphone, ni adresses e-mail.
+        You can write in English or French. / Vous pouvez écrire en français ou en anglais.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / Que s'est-il passé ?
+      description: What did you do, what did you expect, what happened instead? / Qu'avez-vous fait, qu'attendiez-vous, que s'est-il passé ?
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device / Appareil
+      options:
+        - Computer / Ordinateur
+        - Phone / Téléphone
+        - Tablet / Tablette
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / Navigateur
+      placeholder: Chrome, Firefox, Safari, Edge, Brave…
+  - type: textarea
+    id: yaml
+    attributes:
+      label: YAML (optional / facultatif)
+      description: If it helps, paste the YAML, with personal details removed. / Si utile, collez le YAML, sans données personnelles.
+      render: yaml
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot (optional / facultatif)
+      description: Drag an image here. / Glissez une image ici.

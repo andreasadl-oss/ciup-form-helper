@@ -1,5 +1,8 @@
 import { LANGS, ui, type Lang } from '../i18n';
 
+/** Template picker for new issues (templates live in .github/ISSUE_TEMPLATE/). */
+export const FEEDBACK_URL = 'https://github.com/andreasadl-oss/ciup-form-helper/issues/new/choose';
+
 export interface HeaderOptions {
   lang: Lang;
   /** Called when the user picks another language. */
@@ -34,7 +37,12 @@ export function mountHeader(root: HTMLElement, options: HeaderOptions): void {
 
   const unofficial = document.createElement('p');
   unofficial.className = 'notice notice-unofficial';
-  unofficial.textContent = t.unofficial;
+  const feedback = document.createElement('a');
+  feedback.href = FEEDBACK_URL;
+  feedback.target = '_blank';
+  feedback.rel = 'noopener';
+  feedback.textContent = t.feedback;
+  unofficial.append(t.unofficial, ' ', feedback);
   const privacy = document.createElement('p');
   privacy.className = 'notice notice-privacy';
   privacy.textContent = t.privacy;

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Open the helper / Ouvrir l'outil
+    url: https://andreasadl-oss.github.io/ciup-form-helper/
+    about: The form helper itself. / L'outil d'aide au formulaire.

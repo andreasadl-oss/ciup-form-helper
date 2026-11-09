@@ -1,0 +1,21 @@
+name: Improvement / Amélioration
+description: An idea, a confusing text, a missing feature or a new form version. / Une idée, un texte peu clair, une fonction manquante ou une nouvelle version du formulaire.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Issues are public.** Don't paste personal details.
+        **Les tickets sont publics.** Ne collez pas de données personnelles.
+        You can write in English or French. / Vous pouvez écrire en français ou en anglais.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would make it better? / Qu'est-ce qui l'améliorerait ?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why? (optional / facultatif)
+      description: What were you trying to do? / Qu'essayiez-vous de faire ?
