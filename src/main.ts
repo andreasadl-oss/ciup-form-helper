@@ -15,6 +15,7 @@ import { mountPreviewPanel } from './panels/preview';
 import { mountPromptPanel } from './panels/prompt';
 import { connectValidation } from './panels/validation';
 import { mountYamlPanel } from './panels/yaml';
+import { uncoveredProblems } from './validation/validate';
 import { createFontMetrics, parseLayout, type FillData } from './render';
 import { createFormFiller } from './render/fill-form';
 import { notoSans } from './render/noto-sans';
@@ -88,9 +89,10 @@ const actions = mountActionsPanel(mount('actions-panel'), {
   getPdf: async () => {
     const { result } = state.get();
     if (!result.ok) throw new Error(t.actions.fixYamlFirst);
-    // The renderer's problems (too wide, too long, can't draw) are already shown by validation.
-    const { pdf } = await fill(result.data);
+    const { pdf, problems } = await fill(result.data);
     notices.clear();
+    // Validation already warns about text that doesn't fit or can't be drawn; show the rest.
+    for (const p of uncoveredProblems(problems)) notices.show(t.actions.renderProblem(p.field, p.message), 'warning');
     return pdf;
   },
   readyPdf: preview.readyPdf,

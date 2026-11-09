@@ -67,6 +67,7 @@ const en = {
     fixYamlFirst: 'fix the YAML error first',
     pdfFailed: (error: string) => `Could not create the PDF: ${error}`,
     loadFailed: (error: string) => `Could not load the form PDF: ${error}`,
+    renderProblem: (field: string, problem: string) => `Form layout problem, field "${field}": ${problem}`,
   },
 };
 
@@ -130,6 +131,7 @@ const fr: UiStrings = {
     fixYamlFirst: "corrigez d'abord l'erreur YAML",
     pdfFailed: (error) => `Impossible de créer le PDF : ${error}`,
     loadFailed: (error) => `Impossible de charger le PDF du formulaire : ${error}`,
+    renderProblem: (field, problem) => `Problème de mise en page du formulaire, champ « ${field} » : ${problem}`,
   },
 };
 

@@ -6,7 +6,7 @@
  * `formatWarning` (`./messages`), so the UI can translate them.
  */
 import type { FormDefinition } from '../forms/definition';
-import { appendixHasRows, dataKeysOf, fieldText, fitLines, type FontMetrics, type Layout } from '../render';
+import { appendixHasRows, dataKeysOf, fieldText, fitLines, type FontMetrics, type Layout, type Problem, type ProblemKind } from '../render';
 
 export type Severity = 'high' | 'normal';
 
@@ -118,6 +118,14 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
   }
 
   return warnings;
+}
+
+/** Renderer problems that alidate already warns about (tooWide, tooLong, unsupportedChars). */
+const COVERED: ReadonlySet<ProblemKind> = new Set<ProblemKind>(['tooWide', 'tooLong', 'cannotDraw']);
+
+/** The renderer problems validation has no warning for (e.g. a layout field on a page the PDF lacks): show these too. */
+export function uncoveredProblems(problems: Problem[]): Problem[] {
+  return problems.filter((p) => !COVERED.has(p.kind));
 }
 
 /**

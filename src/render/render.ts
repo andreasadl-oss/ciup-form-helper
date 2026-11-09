@@ -16,9 +16,13 @@ const CHECK_SIZE = 10;
 /** Flat key/values using layout field names and template keys, plus `appendix`. */
 export type FillData = Record<string, unknown> & { appendix?: Appendix | null };
 
+export type ProblemKind = 'missingPage' | 'tooWide' | 'tooLong' | 'cannotDraw';
+
 export interface Problem {
   /** Layout field name. */
   field: string;
+  kind: ProblemKind;
+  /** English, for developers (the UI shows validation warnings instead where it can). */
   message: string;
 }
 
@@ -45,7 +49,7 @@ export async function renderForm({ formPdf, layout, data, fonts = helvetica }: R
   for (const [name, field] of Object.entries(layout.fields)) {
     const page = pages[field.page];
     if (!page) {
-      problems.push({ field: name, message: `page ${field.page} does not exist in the form` });
+      problems.push({ field: name, kind: 'missingPage', message: `page ${field.page} does not exist in the form` });
       continue;
     }
     drawField(page, name, field, data, faces, problems);
@@ -81,7 +85,7 @@ function drawField(
   let leading = 0;
   if (field.type === 'text') {
     lines = [text];
-    if (font.widthOfTextAtSize(text, size) > field.w) problems.push({ field: name, message: 'text wider than the field' });
+    if (font.widthOfTextAtSize(text, size) > field.w) problems.push({ field: name, kind: 'tooWide', message: 'text wider than the field' });
   } else {
     const fit = fitLines(text, { w: field.w, size: field.size, maxLines: field.maxLines }, (s, sz) =>
       font.widthOfTextAtSize(s, sz),
@@ -90,7 +94,7 @@ function drawField(
     size = fit.size;
     leading = field.leading;
     if (fit.overflow) {
-      problems.push({ field: name, message: `text too long (${fit.neededLines} lines, max ${field.maxLines})` });
+      problems.push({ field: name, kind: 'tooLong', message: `text too long (${fit.neededLines} lines, max ${field.maxLines})` });
     }
   }
 
@@ -125,7 +129,7 @@ function drawable(texts: string[], faces: Face[], field: string, problems: Probl
   const missing = [...new Set(composed.flatMap((t) => faces.flatMap((face) => face.canDraw(t))))];
   if (missing.length === 0) return composed;
   const list = missing.map((c) => `"${c}"`).join(', ');
-  problems.push({ field, message: `cannot draw ${list} in this font (replaced with ?)` });
+  problems.push({ field, kind: 'cannotDraw', message: `cannot draw ${list} in this font (replaced with ?)` });
   const bad = new Set(missing);
   return composed.map((t) => Array.from(t, (c) => (bad.has(c) ? '?' : c)).join(''));
 }

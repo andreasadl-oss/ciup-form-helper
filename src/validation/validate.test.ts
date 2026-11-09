@@ -5,7 +5,8 @@ import { getFormDefinition } from '../forms/definition';
 import { getForm } from '../forms/registry';
 import { createFontMetrics, parseLayout, renderForm } from '../render';
 import { notoSansFromDisk } from '../render/noto-sans.test-helper';
-import { validate, type Warning } from './validate';
+import type { Problem } from '../render';
+import { uncoveredProblems, validate, type Warning } from './validate';
 
 const def = getFormDefinition('ciup-demande-manifestation-2026');
 const example = parse(readFileSync('reference/example-data.yaml', 'utf8')) as Record<string, unknown>;
@@ -186,5 +187,17 @@ describe('validate', () => {
     it('accepts names in scripts Noto Sans covers', () => {
       expect(runFull({ nom: 'Ζωή Ольга Nguyễn' })).toEqual([]);
     });
+  });
+});
+
+describe('uncoveredProblems', () => {
+  it('keeps only the renderer problems validation has no warning for', () => {
+    const problems: Problem[] = [
+      { field: 'nom', kind: 'tooWide', message: 'text wider than the field' },
+      { field: 'interet', kind: 'tooLong', message: 'text too long (5 lines, max 4)' },
+      { field: 'nom', kind: 'cannotDraw', message: 'cannot draw' },
+      { field: 'coche', kind: 'missingPage', message: 'page 3 does not exist in the form' },
+    ];
+    expect(uncoveredProblems(problems)).toEqual([problems[3]]);
   });
 });

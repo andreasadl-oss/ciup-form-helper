@@ -57,7 +57,15 @@ describe('renderForm: text fields', () => {
   it('reports text wider than the field but still draws it', async () => {
     const { pdf, problems } = await render({ petit: 'much too long for twenty points' });
     expect((await textRuns(pdf, 0)).map((r) => r.text)).toEqual(['much too long for twenty points']);
-    expect(problems).toEqual([{ field: 'petit', message: 'text wider than the field' }]);
+    expect(problems).toEqual([{ field: 'petit', kind: 'tooWide', message: 'text wider than the field' }]);
+  });
+
+  it('reports a field on a page the form does not have', async () => {
+    const { problems } = await renderForm({ formPdf: await blankForm(1), layout, data: {} });
+    expect(problems).toEqual([
+      { field: 'coche', kind: 'missingPage', message: 'page 1 does not exist in the form' },
+      { field: 'interet', kind: 'missingPage', message: 'page 1 does not exist in the form' },
+    ]);
   });
 });
 
@@ -123,6 +131,7 @@ describe('renderForm: lines fields', () => {
     expect(runs[0].size).toBe(7);
     expect(problems).toHaveLength(1);
     expect(problems[0].field).toBe('interet');
+    expect(problems[0].kind).toBe('tooLong');
     expect(problems[0].message).toMatch(/^text too long \(\d+ lines, max 2\)$/);
   });
 });
@@ -131,7 +140,7 @@ describe('renderForm: characters the font cannot draw', () => {
   it('replaces them with ? and reports them, instead of throwing', async () => {
     const { pdf, problems } = await render({ nom: 'Fête 🎉 Ω' });
     expect((await textRuns(pdf, 0)).map((r) => r.text)).toEqual(['Fête ? ?']);
-    expect(problems).toEqual([{ field: 'nom', message: 'cannot draw "🎉", "Ω" in this font (replaced with ?)' }]);
+    expect(problems).toEqual([{ field: 'nom', kind: 'cannotDraw', message: 'cannot draw "🎉", "Ω" in this font (replaced with ?)' }]);
   });
 
   it('composes accents typed as combining marks before drawing', async () => {
@@ -149,7 +158,7 @@ describe('renderForm: characters the font cannot draw', () => {
     const { problems } = await render({
       appendix: { title: 'Programme 🎶', columns: ['Titre'], rows: [['Ωδή']], outro: 'Ω' },
     });
-    expect(problems).toEqual([{ field: 'appendix', message: 'cannot draw "🎶", "Ω", "δ", "ή" in this font (replaced with ?)' }]);
+    expect(problems).toEqual([{ field: 'appendix', kind: 'cannotDraw', message: 'cannot draw "🎶", "Ω", "δ", "ή" in this font (replaced with ?)' }]);
   });
 });
 
@@ -177,7 +186,7 @@ describe('renderForm with Noto Sans', () => {
       data: { nom: 'Fête 🎉' },
       fonts: notoSansFromDisk,
     });
-    expect(problems).toEqual([{ field: 'nom', message: 'cannot draw "🎉" in this font (replaced with ?)' }]);
+    expect(problems).toEqual([{ field: 'nom', kind: 'cannotDraw', message: 'cannot draw "🎉" in this font (replaced with ?)' }]);
     expect((await drawnType0Widths(pdf, 0))[0].glyphs).toBe(6);
   });
 });
