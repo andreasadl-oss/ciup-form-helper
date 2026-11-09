@@ -7,11 +7,8 @@
  * empty values are left out, as the data contract requires.
  */
 import { Document, isMap, isSeq, YAMLMap, type Node, type Pair, type Scalar } from 'yaml';
+import { isBlank } from '../values';
 import type { FormDefinition } from './definition';
-
-function isEmpty(value: unknown): boolean {
-  return value === false || value === null || value === undefined || value === '';
-}
 
 /** Data keys in form order, each with the section it belongs to. */
 function orderedKeys(def: FormDefinition): { key: string; section: string }[] {
@@ -25,7 +22,7 @@ export function dataToYaml(def: FormDefinition, data: Record<string, unknown>): 
   const knownSet = new Set(known.map((k) => k.key));
   const entries: { key: string; value: unknown; section: string | undefined }[] = [];
   for (const { key, section } of known) {
-    if (key in data && !isEmpty(data[key])) entries.push({ key, value: data[key], section });
+    if (key in data && !isBlank(data[key])) entries.push({ key, value: data[key], section });
   }
   for (const [key, value] of Object.entries(data)) {
     if (!knownSet.has(key)) entries.push({ key, value, section: undefined });

@@ -10,6 +10,7 @@
  */
 import type { EmailDef } from './forms/definition';
 import { appendixHasRows, type FillData } from './render';
+import { isTodo } from './values';
 
 /** Some mail clients / OSes cut or refuse longer `mailto:` URLs. */
 export const MAX_MAILTO_LENGTH = 1800;
@@ -51,7 +52,7 @@ function textValues(data: FillData): Map<string, string> {
   if (appendixHasRows(data.appendix)) values.set('appendix', '');
   for (const [key, raw] of Object.entries(data)) {
     const text = typeof raw === 'string' || typeof raw === 'number' ? String(raw).replace(/\s+/g, ' ').trim() : '';
-    if (text && !/^TODO\b/i.test(text)) values.set(key, text);
+    if (text && !isTodo(text)) values.set(key, text);
   }
   return values;
 }

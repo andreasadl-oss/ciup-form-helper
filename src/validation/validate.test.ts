@@ -35,6 +35,10 @@ describe('validate', () => {
     expect(brief(run({ couleur: 'bleu' }))).toEqual([{ key: 'couleur', message: 'unknownKey', params: { key: 'couleur' } }]);
   });
 
+  it('flags TODO as a word in any case, as the email does', () => {
+    expect(brief(run({ lieu: 'todo salle', personnalites: 'TODOS' }))).toEqual([{ key: 'lieu', message: 'todo', params: {} }]);
+  });
+
   it('flags TODO values, including inside the programme page', () => {
     const appendix = { ...(example.appendix as object), rows: [['1', 'TODO titre', 'x']] };
     expect(brief(run({ lieu: 'TODO salle', appendix }))).toEqual([

@@ -75,6 +75,11 @@ describe('buildMailto', () => {
     expect(subject).toBe('Demande de manifestation');
   });
 
+  it('treats a value with TODO anywhere in it as empty, like validation does', () => {
+    const { subject } = parse(buildMailto(email, { nom: 'Soirée (TODO titre)', date_debut: '12/12/2026' }));
+    expect(subject).toBe('Demande de manifestation, 12/12/2026');
+  });
+
   it('keeps the URL under the length cap by truncating long values with an ellipsis', () => {
     const url = buildMailto(email, { ...full, nom: 'Très longue soirée '.repeat(200) });
     expect(url.length).toBeLessThanOrEqual(MAX_MAILTO_LENGTH);

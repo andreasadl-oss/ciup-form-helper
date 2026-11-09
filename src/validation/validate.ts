@@ -6,6 +6,7 @@
  * `formatWarning` (`./messages`), so the UI can translate them.
  */
 import { parseDate } from '../dates';
+import { isBlank, isTodo } from '../values';
 import type { FormDefinition } from '../forms/definition';
 import { appendixHasRows, dataKeysOf, fieldText, fitLines, type FontMetrics, type Layout, type Problem, type ProblemKind } from '../render';
 
@@ -53,7 +54,7 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
   }
 
   for (const [key, value] of Object.entries(data)) {
-    if (strings(value).some((s) => s.includes('TODO'))) add(key, 'todo');
+    if (strings(value).some(isTodo)) add(key, 'todo');
   }
 
   // Dates: the form's first date key is the start, its last one the end. Each past date is flagged on its own key.
@@ -64,7 +65,7 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
   const days = new Map<string, number>();
   for (const key of dateKeys) {
     const value = data[key];
-    if (isBlank(value) || String(value).includes('TODO')) continue;
+    if (isBlank(value) || isTodo(String(value))) continue;
     const day = parseDay(String(value));
     if (day === undefined) {
       add(key, 'badDate', { value: String(value) });
@@ -159,8 +160,6 @@ const RULES = {
   paidArtist: 'remunere_oui',
   thirdPartySection: 'tiers',
 };
-
-const isBlank = (value: unknown) => value === undefined || value === null || value === '' || value === false;
 
 /** `jj/mm/aaaa` → day number (see `dayNumber`), or undefined if not a real date in that format. */
 function parseDay(text: string): number | undefined {

@@ -3,6 +3,7 @@
  * Coordinates are PDF points from the bottom-left; `y` is the text baseline.
  */
 import { parse } from 'yaml';
+import { isRecord } from '../values';
 
 export interface TextField {
   type: 'text';
@@ -111,8 +112,4 @@ function parseField(name: string, spec: unknown): LayoutField {
 
 function withTemplate<T extends TextField | LinesField>(field: T, template: string | undefined): T {
   return template === undefined ? field : { ...field, template };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

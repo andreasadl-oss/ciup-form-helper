@@ -16,6 +16,7 @@ import type { Bilingual, DataKeyDef, FieldDef, FormDefinition } from '../forms/d
 import { dataToYaml } from '../forms/serialise';
 import { ui, type Lang } from '../i18n';
 import type { AppSnapshot, AppState } from '../state';
+import { isRecord } from '../values';
 
 const ORIGIN = 'form-panel';
 
@@ -51,9 +52,6 @@ function button(text: string, onClick: () => void): HTMLButtonElement {
 }
 
 const asText = (value: unknown): string => (value === undefined || value === null || value === false ? '' : String(value));
-
-const isPlainObject = (value: unknown): value is Data =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 let idCounter = 0;
 const nextId = (key: string) => `form-${key.replace(/\W/g, '-')}-${++idCounter}`;
@@ -186,7 +184,7 @@ export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefi
 
   const appendixData = (): AppendixData | undefined => {
     const value = current[appendixKey];
-    return isPlainObject(value) ? value : undefined;
+    return isRecord(value) ? value : undefined;
   };
   const columnsOf = (a: AppendixData): string[] =>
     Array.isArray(a.columns) ? a.columns.map(asText) : def.appendix.example.columns;

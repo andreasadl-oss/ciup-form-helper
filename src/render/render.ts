@@ -155,6 +155,7 @@ function drawableAppendix(appendix: Appendix, faces: EmbeddedFonts, problems: Pr
   };
 }
 
+/** No text to draw. Unlike `isBlank` (`../values`), `false` is not empty here: check fields don't use this. */
 function isEmpty(value: unknown): boolean {
   return value === undefined || value === null || value === '';
 }
