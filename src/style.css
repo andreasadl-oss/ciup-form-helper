@@ -31,3 +31,26 @@ button {
 .notice-error {
   background: #fde2e2;
 }
+
+#yaml-panel label {
+  display: block;
+  font-weight: 600;
+}
+#yaml-panel textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0.5em 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+}
+#yaml-panel textarea[aria-invalid='true'] {
+  border-color: #c62828;
+}
+.yaml-error {
+  margin: 0;
+  padding: 0.5em 0.75em;
+  border-radius: 4px;
+  background: #fde2e2;
+  white-space: pre-wrap;
+}
