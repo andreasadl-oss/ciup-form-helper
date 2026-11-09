@@ -36,4 +36,24 @@ describe('actions panel', () => {
     expect(saved[0].blob.type).toBe('application/pdf');
     expect(new Uint8Array(await saved[0].blob.arrayBuffer())).toEqual(bytes);
   });
+
+  it('uses the given button label', () => {
+    const root = document.createElement('div');
+    mountActionsPanel(root, { getPdf: async () => new Uint8Array(), fileName: 'f.pdf', label: 'Download example' });
+    expect(root.querySelector('button')!.textContent).toBe('Download example');
+  });
+
+  it('reports getPdf failures instead of downloading', async () => {
+    const saved = captureDownloads();
+    const root = document.createElement('div');
+    const errors: unknown[] = [];
+    mountActionsPanel(root, {
+      getPdf: async () => Promise.reject(new Error('boom')),
+      fileName: 'f.pdf',
+      onError: (e) => errors.push(e),
+    });
+    root.querySelector('button')!.click();
+    await vi.waitFor(() => expect(errors).toHaveLength(1));
+    expect(saved).toEqual([]);
+  });
 });
