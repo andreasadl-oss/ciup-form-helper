@@ -10,6 +10,7 @@
  */
 import type { EmailDef } from './forms/definition';
 import { appendixHasRows, type FillData } from './render';
+import { fillTemplate, templateKeys } from './template';
 import { isTodo } from './values';
 
 /** Some mail clients / OSes cut or refuse longer `mailto:` URLs. */
@@ -60,10 +61,9 @@ function textValues(data: FillData): Map<string, string> {
 function fill(template: string, values: Map<string, string>): string {
   const value = (key: string) => values.get(key) ?? '';
   const withOptional = template.replace(/\[([^[\]]*)\]/g, (_, part: string) =>
-    [...part.matchAll(/\{(\w+)\}/g)].every((m) => values.has(m[1])) ? part : '',
+    templateKeys(part).every((key) => values.has(key)) ? part : '',
   );
-  return withOptional
-    .replace(/\{(\w+)\}/g, (_, key: string) => value(key))
+  return fillTemplate(withOptional, value)
     .split('\n')
     .map((line) => line.replace(/ {2,}/g, ' ').replace(/ +([.,])/g, '$1').trim())
     .join('\n');

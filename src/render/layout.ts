@@ -3,7 +3,10 @@
  * Coordinates are PDF points from the bottom-left; `y` is the text baseline.
  */
 import { parse } from 'yaml';
+import { templateKeys } from '../template';
 import { isRecord } from '../values';
+
+export { templateKeys };
 
 export interface TextField {
   type: 'text';
@@ -64,10 +67,6 @@ export function parseLayout(yamlText: string): Layout {
 export function dataKeysOf(name: string, field: LayoutField): string[] {
   if (field.type === 'check' || field.template === undefined) return [name];
   return templateKeys(field.template);
-}
-
-export function templateKeys(template: string): string[] {
-  return [...template.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
 }
 
 function parseField(name: string, spec: unknown): LayoutField {

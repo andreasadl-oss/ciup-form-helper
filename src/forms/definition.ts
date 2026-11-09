@@ -6,6 +6,7 @@
  * that `meta.yaml` agrees with it.
  */
 import { parse } from 'yaml';
+import { templateKeys } from '../template';
 import { getForm } from './registry';
 
 export type FieldType = 'text' | 'check' | 'lines';
@@ -124,10 +125,6 @@ interface RawMetaField {
 }
 
 const APPENDIX_KEY = 'appendix';
-
-function templateKeys(template: string): string[] {
-  return [...template.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
-}
 
 function dataKeyDef(key: string, m: RawMetaField): DataKeyDef {
   const def: DataKeyDef = { key, label: m.label };

@@ -6,6 +6,7 @@ import { PDFDocument, rgb, type PDFPage } from 'pdf-lib';
 import { drawAppendix, type Appendix } from './appendix';
 import { fitLines } from './fit';
 import { helvetica, type EmbeddedFonts, type Face, type FontFamily } from './font';
+import { fillTemplate } from '../template';
 import { dataKeysOf, type Layout, type LayoutField, type LinesField, type TextField } from './layout';
 
 /** Ink colour #1a2a6c: dark blue, reads as "filled in by hand". */
@@ -108,8 +109,7 @@ function drawField(
 export function fieldText(name: string, field: TextField | LinesField, data: FillData): string | undefined {
   if (!dataKeysOf(name, field).some((key) => !isEmpty(data[key]))) return undefined;
   const template = field.template ?? `{${name}}`;
-  return template
-    .replace(/\{(\w+)\}/g, (_, key: string) => (isEmpty(data[key]) ? '' : String(data[key])))
+  return fillTemplate(template, (key) => (isEmpty(data[key]) ? '' : String(data[key])))
     .trim()
     .normalize('NFC');
 }
@@ -121,11 +121,11 @@ function drawLine(page: PDFPage, text: string, x: number, y: number, w: number, 
 }
 
 /**
- * Compose accents typed as combining marks (NFC), then replace characters the
- * faces have no glyph for with `?`, reporting them once as a problem on `field`.
+ * Replace characters the faces have no glyph for with `?`, reporting them once
+ * as a problem on `field`. `composed` must already be NFC (accents typed as
+ * combining marks composed), as `fieldText` returns them.
  */
-function drawable(texts: string[], faces: Face[], field: string, problems: Problem[]): string[] {
-  const composed = texts.map((t) => t.normalize('NFC'));
+function drawable(composed: string[], faces: Face[], field: string, problems: Problem[]): string[] {
   const missing = [...new Set(composed.flatMap((t) => faces.flatMap((face) => face.canDraw(t))))];
   if (missing.length === 0) return composed;
   const list = missing.map((c) => `"${c}"`).join(', ');
@@ -137,7 +137,7 @@ function drawable(texts: string[], faces: Face[], field: string, problems: Probl
 /** The appendix with every string made drawable (problems reported on field "appendix"). */
 function drawableAppendix(appendix: Appendix, faces: EmbeddedFonts, problems: Problem[]): Appendix {
   const texts: string[] = [];
-  const slot = (value: unknown): number => (value === undefined || value === null ? -1 : texts.push(String(value)) - 1);
+  const slot = (value: unknown): number => (value === undefined || value === null ? -1 : texts.push(String(value).normalize('NFC')) - 1);
   const title = slot(appendix.title);
   const intro = slot(appendix.intro);
   const outro = slot(appendix.outro);
