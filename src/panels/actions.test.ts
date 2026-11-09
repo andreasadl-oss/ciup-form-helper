@@ -43,12 +43,6 @@ describe('actions panel', () => {
     expect(new Uint8Array(await saved[0].blob.arrayBuffer())).toEqual(bytes);
   });
 
-  it('uses the given button label', () => {
-    const root = document.createElement('div');
-    mountActionsPanel(root, { getPdf: async () => new Uint8Array(), fileName: 'f.pdf', label: 'Download example' });
-    expect(root.querySelector('button')!.textContent).toBe('Download example');
-  });
-
   it('asks for the file name at click time', async () => {
     const saved = captureDownloads();
     const root = document.createElement('div');
@@ -64,10 +58,21 @@ describe('actions panel', () => {
     const root = document.createElement('div');
     const panel = mountActionsPanel(root, { getPdf: async () => new Uint8Array(), fileName: 'f.pdf' });
     const button = root.querySelector('button')!;
-    panel.setDownloadEnabled(false);
+    panel.setPdfActionsEnabled(false);
     expect(button.disabled).toBe(true);
-    panel.setDownloadEnabled(true);
+    panel.setPdfActionsEnabled(true);
     expect(button.disabled).toBe(false);
+  });
+
+  it('keeps the Email button enabled when the PDF actions are disabled (mailto needs no PDF)', () => {
+    const root = document.createElement('div');
+    const panel = mountActionsPanel(root, {
+      getPdf: async () => new Uint8Array(),
+      fileName: 'f.pdf',
+      email: { getMailto: () => 'mailto:x', open: () => {} },
+    });
+    panel.setPdfActionsEnabled(false);
+    expect(buttonByText(root, 'Email').disabled).toBe(false);
   });
 
   it('opens the mailto link built at click time, with an attach reminder next to the button', () => {
@@ -198,7 +203,7 @@ describe('actions panel', () => {
       fakeWebShare(true);
       const root = document.createElement('div');
       const panel = mountWithShare(root);
-      panel.setDownloadEnabled(false);
+      panel.setPdfActionsEnabled(false);
       expect(buttonByText(root, 'Share').disabled).toBe(true);
     });
   });

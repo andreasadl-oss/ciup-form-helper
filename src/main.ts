@@ -15,11 +15,11 @@ import { mountPreviewPanel } from './panels/preview';
 import { mountPromptPanel } from './panels/prompt';
 import { connectValidation } from './panels/validation';
 import { mountYamlPanel } from './panels/yaml';
-import { createFontMetrics, parseLayout } from './render';
+import { createFontMetrics, parseLayout, type FillData } from './render';
 import { createFormFiller } from './render/fill-form';
 import { notoSans } from './render/noto-sans';
 import { renderPdfToCanvases } from './render/pdf-canvas';
-import { createAppState } from './state';
+import { createAppState, type AppSnapshot } from './state';
 import { createDraftStore, loadLang, persistDraft, saveLang } from './storage';
 
 const FORM_ID = 'ciup-demande-manifestation-2026';
@@ -71,6 +71,14 @@ connectValidation(state, {
 
 const preview = mountPreviewPanel(mount('preview-panel'), state, { fill, renderPdf: renderPdfToCanvases, lang });
 
+// Email needs no PDF: while the YAML is invalid it uses the last valid data.
+let lastValidData: FillData = {};
+const rememberValid = ({ result }: AppSnapshot) => {
+  if (result.ok) lastValidData = result.data;
+};
+rememberValid(state.get());
+state.subscribe(rememberValid);
+
 const actions = mountActionsPanel(mount('actions-panel'), {
   lang,
   fileName: () => {
@@ -88,16 +96,13 @@ const actions = mountActionsPanel(mount('actions-panel'), {
   readyPdf: preview.readyPdf,
   onError: (error) => notices.show(t.actions.pdfFailed(String(error)), 'error'),
   email: {
-    getMailto: () => {
-      const { result } = state.get();
-      return buildMailto(def.email, result.ok ? result.data : {});
-    },
+    getMailto: () => buildMailto(def.email, lastValidData),
   },
   share: true,
 });
-// Invalid YAML is the only hard block (a restored draft can be invalid from the start).
-actions.setDownloadEnabled(state.get().result.ok);
-state.subscribe(({ result }) => actions.setDownloadEnabled(result.ok));
+// Invalid YAML is the only hard block, for download and share (a restored draft can be invalid from the start).
+actions.setPdfActionsEnabled(state.get().result.ok);
+state.subscribe(({ result }) => actions.setPdfActionsEnabled(result.ok));
 
 // Preload so the first click is instant and load errors show up early.
 getBlankPdf().catch((error) => notices.show(t.actions.loadFailed(String(error)), 'error'));

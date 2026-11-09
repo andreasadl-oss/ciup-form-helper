@@ -12,8 +12,6 @@ export interface ActionsPanelOptions {
   readyPdf?: () => Uint8Array | undefined;
   /** File name, or a function asked at click time (e.g. derived from the current data). */
   fileName: string | (() => string);
-  /** Download button text. Default: "Download PDF" in `lang`. */
-  label?: string;
   /** Interface language. Default: 'en'. */
   lang?: Lang;
   /** Called when getPdf fails, e.g. to show a notice. */
@@ -30,8 +28,8 @@ export interface ActionsPanelOptions {
 }
 
 export interface ActionsPanel {
-  /** Disable the download, email and share buttons, e.g. while the YAML doesn't parse. */
-  setDownloadEnabled(enabled: boolean): void;
+  /** Enable or disable the buttons that need a PDF (download, share), e.g. while the YAML doesn't parse. Email stays enabled. */
+  setPdfActionsEnabled(enabled: boolean): void;
 }
 
 const PDF_TYPE = 'application/pdf';
@@ -58,21 +56,22 @@ function makeButton(text: string, onClick: () => void): HTMLButtonElement {
 export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOptions): ActionsPanel {
   const t = ui[options.lang ?? 'en'].actions;
   const fileName = () => (typeof options.fileName === 'function' ? options.fileName() : options.fileName);
-  const buttons: HTMLButtonElement[] = [];
+  /** Buttons that need a PDF. */
+  const pdfButtons: HTMLButtonElement[] = [];
   const heading = document.createElement('h2');
   heading.textContent = t.heading;
   root.append(heading);
   const row = document.createElement('div');
   row.className = 'button-row';
 
-  const download = makeButton(options.label ?? t.download, async () => {
+  const download = makeButton(t.download, async () => {
     try {
       downloadBytes(await options.getPdf(), fileName());
     } catch (error) {
       options.onError?.(error);
     }
   });
-  buttons.push(download);
+  pdfButtons.push(download);
   row.append(download);
 
   if (options.share && canShareFiles()) {
@@ -89,7 +88,7 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
         if (!(error instanceof DOMException && error.name === 'AbortError')) options.onError?.(error);
       }
     });
-    buttons.push(button);
+    pdfButtons.push(button);
     row.append(button);
   }
   root.append(row);
@@ -103,13 +102,12 @@ export function mountActionsPanel(root: HTMLElement, options: ActionsPanelOption
     reminder.className = 'email-reminder';
     reminder.textContent = t.emailReminder;
     group.append(button, reminder);
-    buttons.push(button);
     root.append(group);
   }
 
   return {
-    setDownloadEnabled(enabled) {
-      for (const b of buttons) b.disabled = !enabled;
+    setPdfActionsEnabled(enabled) {
+      for (const b of pdfButtons) b.disabled = !enabled;
     },
   };
 }
