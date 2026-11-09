@@ -1,15 +1,22 @@
 import { parseDocument } from 'yaml';
 import type { FillData } from './render';
 
-export interface YamlError {
-  message: string;
-  /** 1-based line of the error, when the parser knows it. */
-  line?: number;
-  /** 1-based column of the error, when the parser knows it. */
-  column?: number;
-  /** Set for errors raised by the app (not the parser), so the UI can translate them. */
-  kind?: 'notMapping';
-}
+export type YamlError =
+  | {
+      /** A YAML syntax error; `message` is the parser's (English) text. */
+      kind: 'syntax';
+      message: string;
+      /** 1-based line of the error, when the parser knows it. */
+      line?: number;
+      /** 1-based column of the error, when the parser knows it. */
+      column?: number;
+    }
+  | {
+      /** Valid YAML, but not a `key: value` mapping at the top level (the UI has the text). */
+      kind: 'notMapping';
+      line: number;
+      column: number;
+    };
 
 export type ParseResult = { ok: true; data: FillData } | { ok: false; error: YamlError };
 
@@ -18,21 +25,13 @@ export function parseYaml(text: string): ParseResult {
   const [first] = doc.errors;
   if (first) {
     const pos = first.linePos?.[0];
-    return { ok: false, error: { message: first.message, line: pos?.line, column: pos?.col } };
+    return { ok: false, error: { kind: 'syntax', message: first.message, line: pos?.line, column: pos?.col } };
   }
   const value: unknown = doc.toJS();
   if (value == null) return { ok: true, data: {} };
   if (typeof value !== 'object' || Array.isArray(value)) {
     const line = doc.contents?.range ? lineOf(text, doc.contents.range[0]) : 1;
-    return {
-      ok: false,
-      error: {
-        message: 'The YAML must be a list of "key: value" lines (for example  nom: "Soirée").',
-        line,
-        column: 1,
-        kind: 'notMapping',
-      },
-    };
+    return { ok: false, error: { kind: 'notMapping', line, column: 1 } };
   }
   return { ok: true, data: value as FillData };
 }

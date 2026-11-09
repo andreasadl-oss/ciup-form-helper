@@ -63,8 +63,8 @@ export function mountYamlPanel(root: HTMLElement, state: AppState, options: Yaml
 }
 
 /** "Line 2, column 7: <parser message, without its own position suffix>". */
-function describe({ message, line, column, kind }: YamlError, t: UiStrings['yaml']): string {
-  const text = kind === 'notMapping' ? t.notMapping : message.replace(/ at line \d+, column \d+:?/, '');
-  if (line === undefined) return text;
-  return `${t.position(line, column)}: ${text}`;
+function describe(error: YamlError, t: UiStrings['yaml']): string {
+  const text = error.kind === 'notMapping' ? t.notMapping : error.message.replace(/ at line \d+, column \d+:?/, '');
+  if (error.line === undefined) return text;
+  return `${t.position(error.line, error.column)}: ${text}`;
 }

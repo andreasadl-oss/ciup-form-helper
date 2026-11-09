@@ -21,7 +21,12 @@ export interface Warning {
   params: Record<string, string | number | string[]>;
 }
 
-export type MessageKey = 'unknownKey' | 'todo' | 'badDate' | 'datePast' | 'tooSoon'
+export type MessageKey =
+  | 'unknownKey'
+  | 'todo'
+  | 'badDate'
+  | 'datePast'
+  | 'tooSoon'
   | 'endBeforeStart'
   | 'groupConflict'
   | 'concertNoAppendix'
@@ -86,12 +91,13 @@ export function validate(data: Data, def: FormDefinition, today: Date, options: 
     const on = group.fields.filter(ticked);
     if (on.length > 1) add(on[0], 'groupConflict', { fields: on });
   }
-  const has = (key: string) => valid.has(key);
-  if (has(RULES.concert) && ticked(RULES.concert) && !appendixHasRows(data[def.appendix.key])) add(RULES.concert, 'concertNoAppendix');
-  if (has(RULES.paidEntry) && ticked(RULES.paidEntry)) add(RULES.paidEntry, 'paidEntry');
-  if (has(RULES.paidArtist) && ticked(RULES.paidArtist)) {
-    const thirdParty = def.fields.filter((f) => f.section === RULES.thirdPartySection).flatMap((f) => f.dataKeys);
-    if (thirdParty.length > 0 && thirdParty.every((k) => isBlank(data[k.key]))) add(RULES.paidArtist, 'paidNoThirdParty');
+  // Form-specific rules (meta.yaml `validation`); each is skipped when the form has none.
+  const { concert, paidEntry, paidArtist, thirdPartySection } = def.rules;
+  if (concert && ticked(concert) && !appendixHasRows(data[def.appendix.key])) add(concert, 'concertNoAppendix');
+  if (paidEntry && ticked(paidEntry)) add(paidEntry, 'paidEntry');
+  if (paidArtist && ticked(paidArtist)) {
+    const thirdParty = def.fields.filter((f) => f.section === thirdPartySection).flatMap((f) => f.dataKeys);
+    if (thirdParty.length > 0 && thirdParty.every((k) => isBlank(data[k.key]))) add(paidArtist, 'paidNoThirdParty');
   }
 
   const { layout, metrics } = options;
@@ -149,17 +155,6 @@ function wordCachedMeasure(measure: (text: string, size: number) => number): (te
     return (words.reduce((sum, word) => sum + unit(word), 0) + (words.length - 1) * unit(' ')) * size;
   };
 }
-
-/** CIUP rules (SPEC "Validation", contradictions). Skipped for forms without these keys. */
-const RULES = {
-  /** Needs the programme page (Sacem). */
-  concert: 'type_concert',
-  /** Events at the Cité must be free. */
-  paidEntry: 'entree_payante',
-  /** A paid artist needs a convention: section 5 filled in. */
-  paidArtist: 'remunere_oui',
-  thirdPartySection: 'tiers',
-};
 
 /** `jj/mm/aaaa` → day number (see `dayNumber`), or undefined if not a real date in that format. */
 function parseDay(text: string): number | undefined {

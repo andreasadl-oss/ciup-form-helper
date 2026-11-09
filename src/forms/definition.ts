@@ -94,6 +94,21 @@ export interface PromptDef {
   outro: string;
 }
 
+/**
+ * Form-specific contradiction checks for validation (meta.yaml `validation`).
+ * Each is optional: a form without it skips that check.
+ */
+export interface RulesDef {
+  /** Check field that needs the appendix (CIUP: a concert needs its Sacem programme). */
+  concert?: string;
+  /** Check field that must not be ticked (CIUP: events must be free). */
+  paidEntry?: string;
+  /** Check field that needs `thirdPartySection` filled in (CIUP: a paid artist needs a convention). */
+  paidArtist?: string;
+  /** Section id of the third-party fields. Required with `paidArtist`. */
+  thirdPartySection?: string;
+}
+
 export interface FormDefinition {
   id: string;
   email: EmailDef;
@@ -107,6 +122,7 @@ export interface FormDefinition {
   /** Layout fields, in layout.yaml order. */
   fields: FieldDef[];
   groups: GroupDef[];
+  rules: RulesDef;
   /**
    * Every valid top-level key of the data YAML: the data keys of all fields
    * (template keys instead of template field names) plus `appendix`.
@@ -146,6 +162,7 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
     prompt: PromptDef;
     ciup_rules: string;
     appendix: Omit<AppendixDef, 'key'>;
+    validation?: Record<string, string>;
   };
 
   const fail = (message: string): never => {
@@ -200,6 +217,7 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
   for (const k of truncateFirst) if (!dataKeys.has(k)) fail(`email truncate_first lists "${k}", which is not a data key`);
 
   const validKeys = [...dataKeys, APPENDIX_KEY];
+  const rules = parseRules(meta.validation ?? {}, layout.fields, sectionIds, fail);
 
   return {
     id,
@@ -211,8 +229,32 @@ export function parseFormDefinition(id: string, layoutYaml: string, metaYaml: st
     sections,
     fields,
     groups,
+    rules,
     validKeys,
   };
+}
+
+const RULE_NAMES = { concert: 'concert', paid_entry: 'paidEntry', paid_artist: 'paidArtist', third_party_section: 'thirdPartySection' } as const;
+
+function parseRules(
+  raw: Record<string, string>,
+  layoutFields: Record<string, Raw>,
+  sectionIds: Set<string>,
+  fail: (message: string) => never,
+): RulesDef {
+  const rules: RulesDef = {};
+  for (const [name, value] of Object.entries(raw)) {
+    const key = RULE_NAMES[name as keyof typeof RULE_NAMES] ?? fail(`validation.${name} is not a known rule (${Object.keys(RULE_NAMES).join(', ')})`);
+    if (key === 'thirdPartySection') {
+      if (!sectionIds.has(value)) fail(`validation.third_party_section has unknown section "${value}"`);
+    } else {
+      const field = layoutFields[value] ?? fail(`validation.${name} references "${value}", which is not in layout.yaml`);
+      if (field.type !== 'check') fail(`validation.${name} references "${value}", which is not a check field`);
+    }
+    rules[key] = value;
+  }
+  if (rules.paidArtist !== undefined && rules.thirdPartySection === undefined) fail('validation.paid_artist needs validation.third_party_section');
+  return rules;
 }
 
 export function getFormDefinition(id: string): FormDefinition {

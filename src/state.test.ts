@@ -13,7 +13,8 @@ describe('parseYaml', () => {
     // An unquoted colon in a value, a typical hand/LLM mistake.
     const result = parseYaml('nom: "Soirée"\nlieu: Salon: grand\nassis: 30\n');
     expect(result).toMatchObject({ ok: false, error: { line: 2, column: 7 } });
-    if (!result.ok) expect(result.error.message).toMatch(/nested mappings/i);
+    if (!result.ok && result.error.kind === 'syntax') expect(result.error.message).toMatch(/nested mappings/i);
+    expect(result).toMatchObject({ error: { kind: 'syntax' } });
   });
 
   it('rejects duplicate keys, reporting the second one', () => {
@@ -28,8 +29,8 @@ describe('parseYaml', () => {
   it('rejects YAML whose top level is not a key: value mapping', () => {
     for (const text of ['just a sentence', '- a\n- b\n']) {
       const result = parseYaml(text);
-      expect(result).toMatchObject({ ok: false, error: { line: 1 } });
-      if (!result.ok) expect(result.error.message).toMatch(/key: value/);
+      // The UI shows the translated text for this kind (i18n `notMapping`).
+      expect(result).toEqual({ ok: false, error: { kind: 'notMapping', line: 1, column: 1 } });
     }
   });
 });

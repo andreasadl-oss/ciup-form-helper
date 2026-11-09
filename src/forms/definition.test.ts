@@ -73,6 +73,20 @@ describe('parseFormDefinition consistency checks', () => {
     expect(parseWith((m) => (m.groups.g.fields = ['oui', 'nom']))).toThrow(/group "g".*nom.*not a check field/);
   });
 
+  it('reads the validation rules, all optional', () => {
+    expect(parseFormDefinition('f', fixtureLayout, fixtureMeta()).rules).toEqual({});
+    const def = parseFormDefinition('f', fixtureLayout, fixtureMeta((m) => (m.validation = { concert: 'oui', paid_entry: 'non', paid_artist: 'oui', third_party_section: 's' })));
+    expect(def.rules).toEqual({ concert: 'oui', paidEntry: 'non', paidArtist: 'oui', thirdPartySection: 's' });
+  });
+
+  it('rejects validation rules that point at non-check fields or unknown sections', () => {
+    expect(parseWith((m) => (m.validation = { concert: 'nom' }))).toThrow(/validation\.concert.*nom.*not a check field/);
+    expect(parseWith((m) => (m.validation = { paid_entry: 'nope' }))).toThrow(/validation\.paid_entry.*nope/);
+    expect(parseWith((m) => (m.validation = { paid_artist: 'oui' }))).toThrow(/paid_artist.*third_party_section/);
+    expect(parseWith((m) => (m.validation = { paid_artist: 'oui', third_party_section: 'x' }))).toThrow(/third_party_section.*unknown section "x"/);
+    expect(parseWith((m) => (m.validation = { typo: 'oui' }))).toThrow(/validation\.typo/);
+  });
+
   it('rejects mail templates that use unknown data keys', () => {
     expect(parseWith((m) => (m.email.body = 'Bonjour {dates}'))).toThrow(/email.*\{dates\}/);
     expect(parseWith((m) => (m.email.body = 'Formulaire[{appendix} et programme]'))).not.toThrow();
@@ -145,6 +159,10 @@ describe('getFormDefinition (CIUP form)', () => {
     expect(field('remunere_oui').group).toBe('remunere');
     expect(field('soiree_externe').group).toBe('soiree_public');
     expect(field('type_concert').group).toBeUndefined();
+  });
+
+  it('carries the CIUP validation rules', () => {
+    expect(def.rules).toEqual({ concert: 'type_concert', paidEntry: 'entree_payante', paidArtist: 'remunere_oui', thirdPartySection: 'tiers' });
   });
 
   it('carries the recipient, mail templates and the 21-day deadline', () => {

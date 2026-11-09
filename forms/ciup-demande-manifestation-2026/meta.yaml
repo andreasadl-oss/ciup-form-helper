@@ -50,6 +50,13 @@ ciup_rules: >-
   Events at the Cité are free; no ticket or alcohol sales. Paid artists or partnerships require
   a convention (section 5); otherwise leave section 5 out.
 
+# Contradiction checks (validation warnings). Field names must be check fields.
+validation:
+  concert: type_concert          # ticked: needs the programme page (Sacem)
+  paid_entry: entree_payante     # ticked: events at the Cité must be free
+  paid_artist: remunere_oui      # ticked: needs a convention, so section 5 filled in
+  third_party_section: tiers
+
 sections:
   - id: demandeur
     title: {en: "1. Applicant", fr: "1. Demandeur"}
