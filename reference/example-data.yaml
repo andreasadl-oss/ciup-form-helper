@@ -1,0 +1,37 @@
+# Fictional example of a filled-in data file (all names made up).
+maison: "Maison Exemple"
+nature_residents: true
+
+nom: "Soirée acoustique des résidents"
+type_concert: true
+concert_ouvert_oui: true
+date_debut: "12/12/2026"
+date_fin: "12/12/2026"
+heure_debut: "19 h 30"
+heure_fin: "21 h 00"
+lieu: "Grand salon"
+assis: "30"
+debout: "10"
+entree_libre: true
+entree_gratuite: true
+
+personnalites: "Aucune"
+
+artiste_oui: true
+remunere_non: true
+
+interet: >-
+  Concert acoustique d'environ 45 minutes proposé par trois résidents musiciens de la Maison
+  Exemple. Objectif : faire découvrir les talents de la maison, créer un moment convivial entre
+  résidents de différentes maisons et cultures. Entrée libre et gratuite, sans vente de billets
+  ni de boissons.
+universites: "Université Exemple ; École Exemple"
+
+appendix:
+  title: "Programme : Soirée acoustique des résidents"
+  intro: "Trois résidents (guitare, chant, violon). Durée : environ 45 minutes."
+  columns: ["#", "Titre", "Compositeur(s) / auteur(s)"]
+  col_widths: [25, 170, 300]
+  rows:
+    - ["1", "Autumn Leaves", "Joseph Kosma / Jacques Prévert"]
+    - ["2", "La Vie en rose", "Louiguy / Édith Piaf"]

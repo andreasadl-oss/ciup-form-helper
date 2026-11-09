@@ -1,0 +1,4 @@
+pypdf>=6
+reportlab>=4
+pyyaml>=6
+pypdfium2>=4  # only for --preview
