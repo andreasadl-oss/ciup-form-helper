@@ -1,0 +1,68 @@
+# Field positions on the CIUP "Demande de manifestation 2026" form (form.pdf).
+# Coordinates are PDF points from the bottom-left; y is the text baseline.
+# Page 0 = first page. Send the filled form to evenements.internes@ciup.fr, 2–3+ weeks ahead.
+pdf: form.pdf
+
+fields:
+  # 1. Demandeur
+  maison:                     {page: 0, x: 196,  y: 656.1, w: 345}
+  nature_programmation:       {page: 0, type: check, x: 49.5, y: 619.3}
+  nature_partenariat:         {page: 0, type: check, x: 49.5, y: 604.3}
+  nature_residents:           {page: 0, type: check, x: 49.5, y: 589.3}
+  nature_interne:             {page: 0, type: check, x: 49.5, y: 573.5}
+
+  # 2. Informations sur l'événement
+  nom:                        {page: 0, x: 151,  y: 506.7, w: 390}
+  type_conference:            {page: 0, type: check, x: 49.5,  y: 470.7}
+  conference_ouvert_oui:      {page: 0, type: check, x: 206.5, y: 455.6}
+  conference_ouvert_non:      {page: 0, type: check, x: 240.3, y: 455.6}
+  type_soiree:                {page: 0, type: check, x: 49.5,  y: 440.6}
+  soiree_interne:             {page: 0, type: check, x: 298.1, y: 425.6}
+  soiree_externe:             {page: 0, type: check, x: 500.9, y: 425.6}
+  type_concert:               {page: 0, type: check, x: 49.5,  y: 410.6}
+  concert_ouvert_oui:         {page: 0, type: check, x: 206.5, y: 395.6}
+  concert_ouvert_non:         {page: 0, type: check, x: 240.3, y: 395.6}
+  type_film:                  {page: 0, type: check, x: 49.5,  y: 380.6}
+  film_ouvert_oui:            {page: 0, type: check, x: 206.5, y: 351.3}
+  film_ouvert_non:            {page: 0, type: check, x: 240.3, y: 351.3}
+  type_exposition:            {page: 0, type: check, x: 49.5,  y: 336.3}
+  expo_valeur:                {page: 0, x: 254,  y: 321.3, w: 280}
+  expo_nombre:                {page: 0, x: 192,  y: 307.0, w: 340}
+  expo_type:                  {page: 0, x: 280,  y: 292.8, w: 260}
+  type_autre:                 {page: 0, type: check, x: 49.5,  y: 263.5}
+  autre_precision:            {page: 0, x: 141,  y: 263.5, w: 400}
+  dates:                      {page: 0, x: 49.5, y: 227.4, w: 400, template: "Du {date_debut} au {date_fin}"}
+  horaires:                   {page: 0, x: 49.5, y: 213.2, w: 400, template: "De {heure_debut} à {heure_fin}"}
+  lieu:                       {page: 0, x: 195,  y: 191.4, w: 345}
+  assis:                      {page: 0, x: 205,  y: 168.9, w: 97}
+  debout:                     {page: 0, x: 365,  y: 168.9, w: 177}
+  entree_libre:               {page: 0, type: check, x: 149.4, y: 145.6}
+  entree_invitation:          {page: 0, type: check, x: 186.2, y: 145.6}
+  entree_gratuite:            {page: 0, type: check, x: 256.8, y: 145.6}
+  entree_payante:             {page: 0, type: check, x: 307.9, y: 145.6}
+
+  # 3. Personnalités attendues
+  personnalites:              {page: 0, x: 49.5, y: 87.1, w: 490}
+
+  # 4. Dispositifs et prestations
+  artiste_oui:                {page: 1, type: check, x: 168.9, y: 656.8}
+  artiste_non:                {page: 1, type: check, x: 202.8, y: 656.8}
+  remunere_oui:               {page: 1, type: check, x: 185.5, y: 633.6}
+  remunere_non:               {page: 1, type: check, x: 219.3, y: 633.6}
+  remunere_intermittent:      {page: 1, type: check, x: 165.2, y: 611.0}
+  remunere_association:       {page: 1, type: check, x: 318.4, y: 611.0}
+  traiteur_accueil_cafe:      {page: 1, type: check, x: 93.9,  y: 587.8}
+  traiteur_pause_cafe:        {page: 1, type: check, x: 166.7, y: 587.8}
+  traiteur_cocktail:          {page: 1, type: check, x: 237.3, y: 587.8}
+  traiteur_quantite:          {page: 1, x: 350,  y: 587.8, w: 28}
+
+  # 5. Informations tiers (only needed when a convention is required)
+  tiers_nom:                  {page: 1, x: 292,  y: 499.2, w: 250}
+  tiers_signataire:           {page: 1, x: 309,  y: 472.9, w: 233}
+  tiers_email:                {page: 1, x: 186,  y: 448.1, w: 355}
+  tiers_adresse:              {page: 1, x: 176,  y: 424.1, w: 365}
+  tiers_infos:                {page: 1, type: lines, x: 49.5, y: 385.1, w: 490, leading: 13.5, max_lines: 2}
+
+  # 6. Intérêt de la manifestation
+  interet:                    {page: 1, type: lines, x: 49.5, y: 282.2, w: 490, leading: 14.3, max_lines: 4}
+  universites:                {page: 1, type: lines, x: 49.5, y: 195.9, w: 490, leading: 14.3, max_lines: 4}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event request form helper</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Event request form helper</h1>
+      <p class="tagline">Unofficial community helper. Everything stays in your browser.</p>
+    </header>
+    <main>
+      <!-- One mount element per panel. Each panel is a module under src/panels/. -->
+      <div id="notices" aria-live="polite"></div>
+      <section id="prompt-panel"></section>
+      <section id="yaml-panel"></section>
+      <section id="form-panel"></section>
+      <section id="preview-panel"></section>
+      <section id="actions-panel"></section>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

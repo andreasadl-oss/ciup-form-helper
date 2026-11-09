@@ -1,0 +1,33 @@
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1b1b1f;
+  background: #fafafa;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 0 16px 32px;
+}
+
+main > section:empty {
+  display: none;
+}
+
+button {
+  font: inherit;
+  padding: 0.5em 1em;
+}
+
+.notice {
+  padding: 0.5em 0.75em;
+  border-radius: 4px;
+  background: #eef;
+}
+.notice-warning {
+  background: #fff4d6;
+}
+.notice-error {
+  background: #fde2e2;
+}
