@@ -21,13 +21,14 @@ const en = {
   },
   prompt: {
     heading: 'Option A: let a chatbot write the YAML',
-    summary: 'Copy → paste into a chatbot → describe your event → answer its questions → paste the YAML below.',
+    summary: 'Copy → paste into a chatbot → describe your event → answer its questions → paste the YAML below → download and send the PDF.',
     steps: [
       'Copy the prompt below.',
       'Paste it into any chatbot (ChatGPT, Le Chat, Claude…).',
       'Replace the last part with a description of your event, in any language, and send it.',
       'Answer its questions until it gives you the YAML. When it suggests an answer, a short "yes" is usually enough.',
-      'Paste the YAML it gives back into the box below. Check the result in the form further down.',
+      'Paste the YAML it gives back into the box below. Check the result in the "Preview" and correct anything in the form if needed.',
+      'Download the PDF and send it: see "Download and send".',
     ],
     boxLabel: 'Prompt for the chatbot',
     copy: 'Copy prompt',
@@ -98,13 +99,14 @@ const fr: UiStrings = {
   },
   prompt: {
     heading: 'Option A : faire écrire le YAML par un chatbot',
-    summary: 'Copier → coller dans un chatbot → décrire votre événement → répondre à ses questions → coller le YAML ci-dessous.',
+    summary: 'Copier → coller dans un chatbot → décrire votre événement → répondre à ses questions → coller le YAML ci-dessous → télécharger et envoyer le PDF.',
     steps: [
       'Copiez le prompt ci-dessous.',
       "Collez-le dans n'importe quel chatbot (ChatGPT, Le Chat, Claude…).",
       'Remplacez la dernière partie par une description de votre événement, dans la langue de votre choix, puis envoyez.',
       "Répondez à ses questions jusqu'à ce qu'il vous donne le YAML. Quand il propose une réponse, un simple « oui » suffit généralement.",
-      'Collez le YAML obtenu dans le champ ci-dessous. Vérifiez le résultat dans le formulaire plus bas.',
+      "Collez le YAML obtenu dans le champ ci-dessous. Vérifiez le résultat dans l'« Aperçu » et corrigez si besoin dans le formulaire.",
+      'Téléchargez le PDF et envoyez-le : voir « Télécharger et envoyer ».',
     ],
     boxLabel: 'Prompt pour le chatbot',
     copy: 'Copier le prompt',
