@@ -3,21 +3,126 @@
   line-height: 1.5;
   color: #1b1b1f;
   background: #fafafa;
+  -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0 auto;
-  max-width: 960px;
+  max-width: 1400px;
   padding: 0 16px 32px;
+  background: #fafafa;
+  overflow-wrap: anywhere;
 }
 
-main > section:empty {
+h1 {
+  font-size: 1.4em;
+  margin: 0.5em 0;
+}
+h2 {
+  font-size: 1.2em;
+}
+
+section:empty {
   display: none;
 }
+main section {
+  margin-bottom: 1.5em;
+}
 
+/* Phone first: one column in DOM (= flow) order. Desktop: input left, preview and actions right. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 32px;
+}
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  .col-output {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding-bottom: 16px;
+  }
+}
+
+/* Large tap targets; 16px+ inputs so iOS does not zoom on focus. */
 button {
   font: inherit;
+  min-height: 44px;
   padding: 0.5em 1em;
+  border: 1px solid #8a8a99;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+input,
+textarea,
+select {
+  font: inherit;
+  font-size: max(16px, 1em);
+  max-width: 100%;
+}
+input[type='text'],
+input[type='date'],
+textarea {
+  min-height: 44px;
+  padding: 0.4em 0.5em;
+}
+input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  margin: 0 0.5em 0 0;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin: 0.5em 0;
+}
+
+/* Header (src/panels/header.ts) */
+.header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+.lang-switch {
+  display: flex;
+  gap: 4px;
+}
+.lang-switch button {
+  min-width: 48px;
+}
+.lang-switch button[aria-pressed='true'] {
+  background: #1a2a6c;
+  border-color: #1a2a6c;
+  color: #fff;
+}
+.notice-unofficial,
+.notice-privacy {
+  margin: 0.5em 0;
+  font-size: 0.95em;
+}
+.notice-privacy {
+  background: #e3f4e8;
 }
 
 .notice {
@@ -105,6 +210,8 @@ button {
 
 /* Form panel (src/panels/form.ts) */
 #form-panel fieldset {
+  /* Fieldsets default to min-width: min-content, which overflows phones. */
+  min-width: 0;
   border: 1px solid #ddd;
   border-radius: 4px;
   margin: 0 0 1em;
@@ -150,8 +257,23 @@ button {
   border-color: #b26a00;
 }
 #form-panel .appendix-rows {
-  width: 100%;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
+}
+#form-panel .appendix-rows input {
+  min-width: 7em;
+}
+#form-panel .field-check {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 44px;
+}
+#form-panel .field-check .field-help,
+#form-panel .field-check .field-warning {
+  flex-basis: 100%;
 }
 #form-panel .appendix-rows th {
   text-align: left;

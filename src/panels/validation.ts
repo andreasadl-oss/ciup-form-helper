@@ -20,9 +20,9 @@ export interface ValidationOptions {
   notices: Pick<Notices, 'setSummary'>;
   /** Default: the current date. */
   today?: () => Date;
-  /** Label language for the summary. Default: 'en'. */
+  /** Language of the summary labels and the messages. Default: 'en'. */
   lang?: Lang;
-  /** Message texts. Default: English. */
+  /** Message texts. Default: the table for `lang`. */
   messages?: MessageTable;
 }
 
@@ -30,7 +30,7 @@ export function connectValidation(state: AppState, options: ValidationOptions): 
   const { def, layout, formPanel, notices } = options;
   const today = options.today ?? (() => new Date());
   const lang = options.lang ?? 'en';
-  const table = options.messages ?? messageTables.en;
+  const table = options.messages ?? messageTables[lang];
   let metrics: FontMetrics | undefined;
 
   const labels = new Map<string, Bilingual>(def.fields.flatMap((f) => f.dataKeys.map((k) => [k.key, k.label] as const)));

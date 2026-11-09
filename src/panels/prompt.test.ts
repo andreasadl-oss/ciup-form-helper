@@ -56,4 +56,10 @@ describe('prompt panel', () => {
     expect(document.execCommand).toHaveBeenCalledWith('copy');
     expect(selected).toBe(PROMPT);
   });
+  it('shows French instructions when lang is fr', () => {
+    const root = document.createElement('section');
+    mountPromptPanel(root, { prompt: PROMPT, lang: 'fr' });
+    expect(root.querySelector('h2')!.textContent).toBe('Option A : faire écrire le YAML par un chatbot');
+    expect(root.querySelector('button')!.textContent).toBe('Copier le prompt');
+  });
 });

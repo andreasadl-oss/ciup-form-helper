@@ -6,8 +6,10 @@ import { pdfFileName } from './file-name';
 import { getFormDefinition } from './forms/definition';
 import { generatePrompt } from './forms/prompt';
 import { getForm, loadFormPdf } from './forms/registry';
+import { ui } from './i18n';
 import { mountActionsPanel } from './panels/actions';
 import { mountFormPanel } from './panels/form';
+import { mountHeader } from './panels/header';
 import { mountNotices } from './panels/notices';
 import { mountPreviewPanel } from './panels/preview';
 import { mountPromptPanel } from './panels/prompt';
@@ -18,6 +20,7 @@ import { createFormFiller } from './render/fill-form';
 import { notoSans } from './render/noto-sans';
 import { renderPdfToCanvases } from './render/pdf-canvas';
 import { createAppState } from './state';
+import { createDraftStore, loadLang, persistDraft, saveLang } from './storage';
 
 const FORM_ID = 'ciup-demande-manifestation-2026';
 
@@ -27,54 +30,75 @@ function mount(id: string): HTMLElement {
   return el;
 }
 
+const lang = loadLang();
+const t = ui[lang];
+document.documentElement.lang = lang;
+document.title = t.page.title;
+// Switching language reloads the page; the draft (saved on every change) brings the data back.
+mountHeader(mount('page-header'), {
+  lang,
+  onLangChange: (next) => {
+    saveLang(next);
+    window.location.reload();
+  },
+});
+
 const notices = mountNotices(mount('notices'));
 const form = getForm(FORM_ID);
-const state = createAppState();
+const def = getFormDefinition(FORM_ID);
+const draft = createDraftStore(FORM_ID);
+const state = createAppState(draft.load() ?? '');
+persistDraft(state, draft);
 
 let pdfBytes: Promise<Uint8Array> | undefined;
 const getBlankPdf = () => (pdfBytes ??= loadFormPdf(form));
 const fill = createFormFiller(form, getBlankPdf);
 
-mountYamlPanel(mount('yaml-panel'), state, { exampleYaml });
+mountYamlPanel(mount('yaml-panel'), state, { exampleYaml, lang, clearDraft: () => draft.clear() });
+
+mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(def), lang });
+
+const formPanel = mountFormPanel(mount('form-panel'), state, def, { lang });
+
+connectValidation(state, {
+  def,
+  layout: parseLayout(form.layoutYaml),
+  metrics: createFontMetrics(notoSans),
+  formPanel,
+  notices,
+  lang,
+});
+
+const preview = mountPreviewPanel(mount('preview-panel'), state, { fill, renderPdf: renderPdfToCanvases, lang });
 
 const actions = mountActionsPanel(mount('actions-panel'), {
+  lang,
   fileName: () => {
     const { result } = state.get();
     return pdfFileName(result.ok ? result.data : {});
   },
   getPdf: async () => {
     const { result } = state.get();
-    if (!result.ok) throw new Error('fix the YAML error first');
+    if (!result.ok) throw new Error(t.actions.fixYamlFirst);
     // The renderer's problems (too wide, too long, can't draw) are already shown by validation.
     const { pdf } = await fill(result.data);
     notices.clear();
     return pdf;
   },
-  onError: (error) => notices.show(`Could not create the PDF: ${String(error)}`, 'error'),
+  readyPdf: preview.readyPdf,
+  onError: (error) => notices.show(t.actions.pdfFailed(String(error)), 'error'),
   email: {
     getMailto: () => {
       const { result } = state.get();
-      return buildMailto(getFormDefinition(FORM_ID).email, result.ok ? result.data : {});
+      return buildMailto(def.email, result.ok ? result.data : {});
     },
   },
   share: true,
 });
-// Invalid YAML is the only hard block.
+// Invalid YAML is the only hard block (a restored draft can be invalid from the start).
+actions.setDownloadEnabled(state.get().result.ok);
 state.subscribe(({ result }) => actions.setDownloadEnabled(result.ok));
 
 // Preload so the first click is instant and load errors show up early.
-getBlankPdf().catch((error) => notices.show(`Could not load the form PDF: ${String(error)}`, 'error'));
+getBlankPdf().catch((error) => notices.show(t.actions.loadFailed(String(error)), 'error'));
 
-mountPromptPanel(mount('prompt-panel'), { prompt: generatePrompt(getFormDefinition(FORM_ID)) });
-
-const formPanel = mountFormPanel(mount('form-panel'), state, getFormDefinition(FORM_ID));
-
-connectValidation(state, {
-  def: getFormDefinition(FORM_ID),
-  layout: parseLayout(form.layoutYaml),
-  metrics: createFontMetrics(notoSans),
-  formPanel,
-  notices,
-});
-
-mountPreviewPanel(mount('preview-panel'), state, { fill, renderPdf: renderPdfToCanvases });

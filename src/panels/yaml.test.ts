@@ -58,4 +58,36 @@ describe('yaml panel', () => {
     expect(textarea.value).toBe('nom: "Exemple"\n');
     expect(state.get().result).toEqual({ ok: true, data: { nom: 'Exemple' } });
   });
+  it('shows French texts when lang is fr, including the error position', () => {
+    const root = document.createElement('section');
+    const state = createAppState('nom: a\nnom: b\n');
+    mountYamlPanel(root, state, { exampleYaml: '', lang: 'fr' });
+    expect(root.querySelector('label')!.textContent).toBe('Collez le YAML ici');
+    expect(root.querySelector('[role="alert"]')!.textContent).toMatch(/^Ligne 2, colonne \d+: /);
+    state.setYaml('- a\n- b\n');
+    expect(root.querySelector('[role="alert"]')!.textContent).toMatch(/Le YAML doit être une liste/);
+  });
+
+  describe('clear draft button', () => {
+    it('is shown only when a clearDraft callback is given', () => {
+      const { root } = setup();
+      expect(root.textContent).not.toMatch(/clear draft/i);
+    });
+
+    it('after confirmation, empties the YAML and calls clearDraft', () => {
+      const root = document.createElement('section');
+      const state = createAppState('nom: a\n');
+      let cleared = 0;
+      const answers = [false, true];
+      mountYamlPanel(root, state, { exampleYaml: '', clearDraft: () => cleared++, confirm: () => answers.shift()! });
+      const button = [...root.querySelectorAll('button')].find((b) => /clear draft/i.test(b.textContent ?? ''))!;
+      button.click();
+      expect(state.get().yaml).toBe('nom: a\n');
+      expect(cleared).toBe(0);
+      button.click();
+      expect(state.get().yaml).toBe('');
+      expect(root.querySelector('textarea')!.value).toBe('');
+      expect(cleared).toBe(1);
+    });
+  });
 });

@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 blocked_by: [06, 08, 09]
 ---
 # 11 Polish

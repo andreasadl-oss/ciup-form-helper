@@ -45,6 +45,18 @@ describe('connectValidation', () => {
     ]);
   });
 
+  it('uses French labels and messages when lang is fr', () => {
+    const noticesRoot = document.createElement('div');
+    const formRoot = document.createElement('section');
+    document.body.append(noticesRoot, formRoot);
+    const state = createAppState(exampleYaml.replace('lieu: "Grand salon"', 'lieu: "TODO salle"'));
+    const formPanel = mountFormPanel(formRoot, state, def, { lang: 'fr' });
+    const notices = mountNotices(noticesRoot);
+    connectValidation(state, { def, layout, metrics: new Promise(() => {}), formPanel, notices, today, lang: 'fr' });
+    const summary = [...noticesRoot.querySelectorAll('.notice-summary li')].map((li) => li.textContent);
+    expect(summary).toContain('Lieu (salle): Contient encore TODO : à compléter.');
+  });
+
   it('updates on every change and clears fixed warnings', () => {
     const { state, summary, fieldWarnings } = setup(exampleYaml);
     state.setYaml(`${exampleYaml}\nentree_payante: true\n`);

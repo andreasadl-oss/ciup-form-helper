@@ -25,6 +25,15 @@ describe('formatWarning', () => {
     }
   });
 
+  it('has a French table', () => {
+    expect(formatWarning(w('tooSoon', { days: 9, deadlineDays: 21 }), messages.fr)).toBe(
+      "L'événement a lieu dans 9 jours. Envoyez la demande au moins 21 jours avant : la CIUP peut refuser les demandes tardives.",
+    );
+    expect(formatWarning(w('unknownKey', { key: 'date_debt', suggestion: 'date_debut' }), messages.fr)).toBe(
+      'Clé inconnue « date_debt ». Vouliez-vous dire « date_debut » ?',
+    );
+  });
+
   it('uses another table when given one (for translations)', () => {
     const fr = { ...messages.en, todo: () => 'À compléter' } satisfies MessageTable;
     expect(formatWarning(w('todo'), fr)).toBe('À compléter');

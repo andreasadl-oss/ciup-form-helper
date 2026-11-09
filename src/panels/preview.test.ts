@@ -148,4 +148,22 @@ describe('preview panel', () => {
     await vi.advanceTimersByTimeAsync(300);
     expect(shownLabels(root)).toEqual(['A']);
   });
+  it('shows French texts when lang is fr', async () => {
+    const { root } = setup({ lang: 'fr' }, 'nom: [oops');
+    expect(root.querySelector('h2')!.textContent).toBe('Aperçu');
+    await vi.advanceTimersByTimeAsync(300);
+    expect(root.querySelector('.preview-status')!.textContent).toMatch(/^Aperçu en pause/);
+  });
+  it('readyPdf gives the shown PDF only while it matches the current YAML', async () => {
+    const { panel, state } = setup();
+    expect(panel.readyPdf()).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(new TextDecoder().decode(panel.readyPdf())).toBe('A');
+    state.setYaml('nom: B');
+    expect(panel.readyPdf()).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(new TextDecoder().decode(panel.readyPdf())).toBe('B');
+    state.setYaml('nom: [oops');
+    expect(panel.readyPdf()).toBeUndefined();
+  });
 });

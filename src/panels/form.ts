@@ -13,14 +13,15 @@
  */
 import type { Bilingual, DataKeyDef, FieldDef, FormDefinition } from '../forms/definition';
 import { dataToYaml } from '../forms/serialise';
+import { ui, type Lang } from '../i18n';
 import type { AppSnapshot, AppState } from '../state';
 
 const ORIGIN = 'form-panel';
 
-export type Lang = keyof Bilingual;
+export type { Lang };
 
 export interface FormPanelOptions {
-  /** Label language. Default: 'en'. */
+  /** Interface and label language. Default: 'en'. */
   lang?: Lang;
 }
 
@@ -71,6 +72,7 @@ const nextId = (key: string) => `form-${key.replace(/\W/g, '-')}-${++idCounter}`
 export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefinition, options: FormPanelOptions = {}): FormPanel {
   const lang = options.lang ?? 'en';
   const t = (b: Bilingual) => b[lang];
+  const s = ui[lang].form;
 
   /** Last valid data from the state, plus the form's own edits. */
   let current: Data = {};
@@ -117,7 +119,7 @@ export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefi
     if (k.format === 'date') {
       picker = el('input', 'date-picker');
       picker.type = 'date';
-      picker.setAttribute('aria-label', `${t(k.label)}: pick a date`);
+      picker.setAttribute('aria-label', s.pickDate(t(k.label)));
       picker.addEventListener('input', () => {
         const text = fromIsoDate(picker!.value);
         if (!text) return;
@@ -231,7 +233,7 @@ export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefi
     const a = appendixData();
     if (!a) {
       appendixBody.replaceChildren(
-        button('Add programme page', () => {
+        button(s.addAppendix, () => {
           const { columns, col_widths } = def.appendix.example;
           const fresh: AppendixData = { title: '', columns: [...columns] };
           if (col_widths) fresh.col_widths = [...col_widths];
@@ -259,7 +261,7 @@ export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefi
         const input = el('input');
         input.type = 'text';
         input.name = `${appendixKey}.rows.${i}.${j}`;
-        input.setAttribute('aria-label', `Row ${i + 1}, ${column}`);
+        input.setAttribute('aria-label', s.cell(i + 1, column));
         input.value = asText(row[j]);
         input.addEventListener('input', () => {
           while (row.length < columns.length) row.push('');
@@ -271,7 +273,7 @@ export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefi
       });
       const td = el('td');
       td.append(
-        button('Remove', () => {
+        button(s.removeRow, () => {
           rows.splice(i, 1);
           renderAppendix();
           commit();
@@ -282,16 +284,16 @@ export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefi
     });
 
     appendixBody.replaceChildren(
-      appendixTextInput(a, 'title', 'Title', false),
-      appendixTextInput(a, 'intro', 'Text before the table', true),
+      appendixTextInput(a, 'title', s.title, false),
+      appendixTextInput(a, 'intro', s.intro, true),
       table,
-      button('Add row', () => {
+      button(s.addRow, () => {
         rows.push(columns.map(() => ''));
         renderAppendix();
         commit();
       }),
-      appendixTextInput(a, 'outro', 'Text after the table', true),
-      button('Remove programme page', () => {
+      appendixTextInput(a, 'outro', s.outro, true),
+      button(s.removeAppendix, () => {
         delete current[appendixKey];
         renderAppendix();
         commit();
@@ -301,8 +303,8 @@ export function mountFormPanel(root: HTMLElement, state: AppState, def: FormDefi
 
   // --- Layout ---
 
-  const heading = el('h2', undefined, 'Option B: fill in the form');
-  const invalidNote = el('p', 'form-invalid-note', 'Fix the YAML error above to edit the form again.');
+  const heading = el('h2', undefined, s.heading);
+  const invalidNote = el('p', 'form-invalid-note', s.invalidNote);
   invalidNote.hidden = true;
   const body = el('fieldset', 'form-body');
   for (const section of def.sections) {

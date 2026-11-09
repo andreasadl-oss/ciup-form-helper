@@ -165,6 +165,35 @@ describe('actions panel', () => {
       expect(String(errors[0])).toContain('boom');
     });
 
+    it('shares a ready PDF within the same tap (no await before navigator.share, for iOS Safari)', async () => {
+      const shared = fakeWebShare(true);
+      const root = document.createElement('div');
+      let getPdfCalls = 0;
+      mountActionsPanel(root, {
+        getPdf: async () => (getPdfCalls++, new Uint8Array([9])),
+        readyPdf: () => new Uint8Array([4, 5]),
+        fileName: 'demande.pdf',
+        share: true,
+      });
+      buttonByText(root, 'Share').click();
+      expect(shared).toHaveLength(1); // synchronously, still inside the click
+      expect(new Uint8Array(await shared[0].files![0].arrayBuffer())).toEqual(new Uint8Array([4, 5]));
+      expect(getPdfCalls).toBe(0);
+    });
+
+    it('renders the PDF first when none is ready yet', async () => {
+      const shared = fakeWebShare(true);
+      const root = document.createElement('div');
+      mountActionsPanel(root, {
+        getPdf: async () => new Uint8Array([9]),
+        readyPdf: () => undefined,
+        fileName: 'demande.pdf',
+        share: true,
+      });
+      buttonByText(root, 'Share').click();
+      await vi.waitFor(() => expect(shared).toHaveLength(1));
+      expect(new Uint8Array(await shared[0].files![0].arrayBuffer())).toEqual(new Uint8Array([9]));
+    });
     it('is disabled together with the download', () => {
       fakeWebShare(true);
       const root = document.createElement('div');
@@ -174,6 +203,17 @@ describe('actions panel', () => {
     });
   });
 
+  it('shows French texts when lang is fr', () => {
+    const root = document.createElement('div');
+    mountActionsPanel(root, {
+      getPdf: async () => new Uint8Array(),
+      fileName: 'f.pdf',
+      email: { getMailto: () => 'mailto:x' },
+      lang: 'fr',
+    });
+    expect(buttonByText(root, 'Télécharger le PDF')).toBeTruthy();
+    expect(root.textContent).toContain("N'oubliez pas de joindre le PDF");
+  });
   it('reports getPdf failures instead of downloading', async () => {
     const saved = captureDownloads();
     const root = document.createElement('div');

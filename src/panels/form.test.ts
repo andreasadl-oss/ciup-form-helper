@@ -190,4 +190,12 @@ describe('form panel', () => {
       expect(data()).not.toHaveProperty('appendix');
     });
   });
+  it('uses French labels and texts when lang is fr', () => {
+    const root = document.createElement('section');
+    mountFormPanel(root, createAppState(''), def, { lang: 'fr' });
+    expect(root.querySelector('h2')!.textContent).toBe('Option B : remplir le formulaire');
+    expect(root.textContent).toContain('Lieu (salle)');
+    expect(root.textContent).toContain('Ajouter la page programme');
+    expect(root.querySelector('.date-picker')!.getAttribute('aria-label')).toMatch(/ : choisir une date$/);
+  });
 });

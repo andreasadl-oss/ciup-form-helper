@@ -7,18 +7,23 @@
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
-    <header>
-      <h1>Event request form helper</h1>
-      <p class="tagline">Unofficial community helper. Everything stays in your browser.</p>
-    </header>
+    <!-- Title, language switch, unofficial notice and privacy note (src/panels/header.ts). -->
+    <header id="page-header"></header>
     <main>
-      <!-- One mount element per panel. Each panel is a module under src/panels/. -->
+      <!-- One mount element per panel. Each panel is a module under src/panels/.
+           DOM order follows the user's flow (SPEC "What it does"); on phones it is one column. -->
       <div id="notices" aria-live="polite"></div>
-      <section id="prompt-panel"></section>
-      <section id="yaml-panel"></section>
-      <section id="form-panel"></section>
-      <section id="preview-panel"></section>
-      <section id="actions-panel"></section>
+      <div class="layout">
+        <div class="col-input">
+          <section id="prompt-panel"></section>
+          <section id="yaml-panel"></section>
+          <section id="form-panel"></section>
+        </div>
+        <div class="col-output">
+          <section id="preview-panel"></section>
+          <section id="actions-panel"></section>
+        </div>
+      </div>
     </main>
     <script type="module" src="./src/main.ts"></script>
   </body>

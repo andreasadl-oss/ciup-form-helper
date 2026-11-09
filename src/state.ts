@@ -7,6 +7,8 @@ export interface YamlError {
   line?: number;
   /** 1-based column of the error, when the parser knows it. */
   column?: number;
+  /** Set for errors raised by the app (not the parser), so the UI can translate them. */
+  kind?: 'notMapping';
 }
 
 export type ParseResult = { ok: true; data: FillData } | { ok: false; error: YamlError };
@@ -24,7 +26,12 @@ export function parseYaml(text: string): ParseResult {
     const line = doc.contents?.range ? lineOf(text, doc.contents.range[0]) : 1;
     return {
       ok: false,
-      error: { message: 'The YAML must be a list of "key: value" lines (for example  nom: "Soirée").', line, column: 1 },
+      error: {
+        message: 'The YAML must be a list of "key: value" lines (for example  nom: "Soirée").',
+        line,
+        column: 1,
+        kind: 'notMapping',
+      },
     };
   }
   return { ok: true, data: value as FillData };
