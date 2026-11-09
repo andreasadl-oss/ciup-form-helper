@@ -11,5 +11,17 @@ export {
   type CheckField,
   type LinesField,
 } from './layout';
-export { helvetica, createMeasure, type Face, type EmbeddedFonts, type FontFamily, type MeasureText } from './font';
+export {
+  helvetica,
+  notoSansFrom,
+  createMeasure,
+  createFontMetrics,
+  type Face,
+  type EmbeddedFonts,
+  type FontBytes,
+  type FontFamily,
+  type FontMetrics,
+  type MeasureText,
+} from './font';
+// The app's Noto Sans (fetches the bundled TTFs on first use): import { notoSans } from './noto-sans'.
 export { wrapText, fitLines, MIN_LINES_SIZE, SHRINK_STEP, type LinesBox, type LinesFit, type WidthAtSize } from './fit';
